@@ -1,0 +1,5 @@
+grafana:
+  enabled: false
+
+crds:
+  enabled: false
