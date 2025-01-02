@@ -1,0 +1,17 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: argo-admin
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: arg-admin-binding
+subjects:
+- kind: ServiceAccount
+  name: argo-admin
+roleRef:
+  kind: ClusterRole
+  name: argo-admin
+  apiGroup: rbac.authorization.k8s.io

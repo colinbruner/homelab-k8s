@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# NOTE: Consider SOPS but for now, we'll just do it manually
+#helmCharts:
+#  - name: 1password
+#    releaseName: 1password
+#    version: connect-1.17.0
+#    repo: https://1password.github.io/connect-helm-charts
+#    namespace: 1password
+#    valuesFile: values.yaml
+
+resources:
+  - resources/namespace.yaml

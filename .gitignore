@@ -1,0 +1,2 @@
+# kustomize build --enable-helm will download charts locally
+**/charts/**

@@ -1,0 +1,34 @@
+name: ci
+on:
+  - push
+  - pull_request
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Alerts linter
+            run: make --always-make alerts-lint
+          - name: Generate yaml
+            run: make --always-make generate && git diff --exit-code
+          - name: Grafana dashboard linter
+            run: make --always-make dashboards-lint
+          - name: Jsonnet formatter
+            run: make --always-make fmt && git diff --exit-code
+          - name: Jsonnet linter
+            run: make --always-make jsonnet-lint
+          - name: Unit tests
+            run: make --always-make test
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: scripts/go.mod
+          cache-dependency-path: scripts/go.sum
+      - run: ${{ matrix.run }}

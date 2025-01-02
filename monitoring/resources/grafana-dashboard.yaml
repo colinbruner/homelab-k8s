@@ -1,0 +1,22 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: node-exporter-latest
+spec:
+  instanceSelector:
+    matchLabels:
+      dashboards: "grafana"
+  grafanaCom:
+    id: 1860
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: ingress-nginx
+spec:
+  instanceSelector:
+    matchLabels:
+      dashboards: "grafana"
+  # NOTE: https://github.com/DevOps-Nirvana/Grafana-Dashboards
+  url: "https://raw.githubusercontent.com/DevOps-Nirvana/Grafana-Dashboards/main/kubernetes-nginx-ingress-via-prometheus.json"
