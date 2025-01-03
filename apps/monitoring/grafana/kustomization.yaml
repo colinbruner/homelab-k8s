@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: monitoring
+
+helmCharts:
+  - name: grafana-operator
+    releaseName: grafana-operator
+    version: v5.15.1
+    repo: oci://ghcr.io/grafana/helm-charts
+    namespace: monitoring
+    includeCRDs: true
+
+resources:
+  - resources/grafana-secret.yaml
+  - resources/grafana.yaml
+  - resources/grafana-datasource.yaml
+  - resources/grafana-dashboard.yaml
+  - resources/grafana-ingress.yaml
