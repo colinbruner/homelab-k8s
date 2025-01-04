@@ -10,8 +10,8 @@ function install_metal_lb() {
 }
 
 if [[ $(kubens | grep $NAMESPACE) != $NAMESPACE ]]; then
-    install_metal_lb
     echo "[INFO]: Installing Metal LB.."
+    install_metal_lb
 else
     echo "[INFO]: ${NAMESPACE} namespace already exists. Continuing.."
 fi

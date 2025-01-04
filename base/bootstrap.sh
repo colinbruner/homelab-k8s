@@ -6,51 +6,40 @@
 
 function install_1password() {
     # Install 1password when namespace does not exist
-    if [[ ! $install_namespaces =~ "1password" ]]; then
-        echo "[INFO]: Installing 1Password Operator.."
-        pushd 1password >/dev/null
-        ./install.sh
-        popd >/dev/null
-    else
-        echo "[INFO]: 1Password namespace already exists. Continuing.."
+    pushd 1password >/dev/null
+    ./install.sh
+    popd >/dev/null
+}
+
+function install_namespace() {
+    local path=$1
+    local ns=$2
+    if [[ ! $(kubens | grep $ns) == $ns ]]; then
+        kubectl apply -f $path
     fi
 }
 
-function install_network() {
+function install_component() {
+    local target=$1
     # Forward logic to individual directories install.sh
-    for path in $(find network -depth 1 -type d | sort); do 
-        echo $path
+    for path in $(find $target -depth 1 -type d | sort); do 
         pushd $path >/dev/null
         if [[ -x ./install.sh ]]; then
             ./install.sh
         else
-            echo "[WARNING]: No 'install.sh' executable was found under ${path} directory. Skipping."
+            echo "[WARNING]: No 'install.sh' executable was found for '${target}' under '${path}' directory. Skipping."
         fi
         popd >/dev/null
     done
 }
 
-function install_component() {
-    local name=$1
-    local path=$2
-    local args=$3
-    echo "[INFO]: Installing ${name}."
-    echo kustomize build $path $args | kubectl apply -f -
-}
-
-
 ###
 # Main
 ###
 install_1password
-install_network
+install_component "network"
+install_namespace "monitoring/namespace.yaml" "monitoring"
+install_component "monitoring"
+install_component "argo" # TODO: move to infra?
 
-## Monitoring
-#configure_prometheus
-
-#echo "[INFO]: Installing remaining components.."
-#install_component "Grafana" "monitoring/grafana/" "--enable-helm" 
-#install_component "Prometheus" "monitoring/prometheus/"
-
-#kustomize build --enable-helm . | kubectl apply --force-conflicts --overwrite=true --server-side -f -
-
+# NOTE: Everything else install through ArgoCD

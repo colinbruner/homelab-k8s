@@ -88,13 +88,22 @@ function cleanUp() {
 ###
 trap cleanUp EXIT
 
-# Generates YAML
-setupManifests
-setupVendors
-jsonnetBuild "prometheus.jsonnet"
+function install_prometheus() {
+  # Generates YAML
+  setupManifests
+  setupVendors
+  jsonnetBuild "prometheus.jsonnet"
 
-# Creates CRDs
-createCRDs
+  # Creates CRDs
+  createCRDs
 
-# context: we are within the operator/build/ directory
-applyManifests "manifests/"
+  # context: we are within the operator/build/ directory
+  applyManifests "manifests/"
+}
+
+if [[ -z $(kubectl get crds | grep "prometheus") ]]; then
+    echo "[INFO]: Installing Prometheus.."
+    install_prometheus
+else
+    echo "[INFO]: Prometheus CRDs already exists. Continuing.."
+fi
