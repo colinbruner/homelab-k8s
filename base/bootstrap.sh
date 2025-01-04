@@ -40,6 +40,6 @@ install_1password
 install_component "network"
 install_namespace "monitoring/namespace.yaml" "monitoring"
 install_component "monitoring"
-install_component "argo" # TODO: move to infra?
+install_component "infra"
 
 # NOTE: Everything else install through ArgoCD
