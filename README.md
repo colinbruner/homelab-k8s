@@ -13,6 +13,8 @@ There are two major components [base](./base) and [apps](./apps).
 - base: these are the cluster level components required.
 - apps: this is essentially everything else, base components support these.
 
+![Homelab Dependencies](./assets/dependencies.png)
+
 ## Bootstrapping
 
 Running [boopstrap.sh](./boostrap.sh) will execute all `install.sh` scripts within the `base` directory.
@@ -27,5 +29,5 @@ These scripts are intended to be idemponent and only make changes when their tar
 ```
 
 ## Services
-For more information about the `base` services installed, view [base/README.md](./base/README.md).
 
+For more information about the `base` services installed, view [base/README.md](./base/README.md).

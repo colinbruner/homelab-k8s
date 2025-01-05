@@ -1,8 +1,0 @@
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-namespace: monitoring
-
-#NOTE: prometheus/install.sh must be run before prometheus resources are installed
-resources:
-  - grafana
-  - prometheus
