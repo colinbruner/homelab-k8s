@@ -22,24 +22,29 @@ function install_namespace() {
 function install_component() {
     local target=$1
     # Forward logic to individual directories install.sh
-    for path in $(find $target -depth 1 -type d | sort); do 
+    for path in $(dirname $(find $target -type f -name install.sh | sort)); do
         pushd $path >/dev/null
         if [[ -x ./install.sh ]]; then
             ./install.sh
         else
-            echo "[WARNING]: No 'install.sh' executable was found for '${target}' under '${path}' directory. Skipping."
+            echo "[WARNING]: No executable 'install.sh' file found for '${target}' under '${path}' directory. Skipping."
         fi
         popd >/dev/null
     done
 }
 
 ###
-# Main
+# Base
 ###
 install_1password
 install_component "network"
-install_namespace "monitoring/namespace.yaml" "monitoring"
-install_component "monitoring"
 install_component "infra"
+
+###
+# Argo & Monitoring
+###
+# TODO?
+#install_namespace "monitoring/namespace.yaml" "monitoring"
+#install_component "monitoring"
 
 # NOTE: Everything else install through ArgoCD
