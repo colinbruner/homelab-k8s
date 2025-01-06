@@ -17,14 +17,14 @@ There are two major components [base](./base) and [apps](./apps).
 
 ## Bootstrapping
 
-Running [boopstrap.sh](./boostrap.sh) will execute all `install.sh` scripts within the `base` directory.
+Running [base/boopstrap.sh](./base/boostrap.sh) or [apps](./apps/bootstrap.sh) will execute all `install.sh` scripts within their respective directories.
 
 These scripts are intended to be idemponent and only make changes when their target namespace does NOT exist.
 
 ```bash
 # Expects the following:
 # - Kube context @ desired cluster to bootstrap with appropriate access
-# - kubectl, kustomize, kfilt, installed and within PATH.
+# - kubectl, kustomize, kfilt, yq, installed and within PATH.
 ./bootstrap.sh
 ```
 
