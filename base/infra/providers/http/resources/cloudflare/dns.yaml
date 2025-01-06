@@ -1,0 +1,216 @@
+---
+# Source: cloudflare-http/templates/dns.yaml
+apiVersion: http.crossplane.io/v1alpha2
+kind: Request
+metadata:
+  name: cloudflare-dns-argocd
+spec:
+  providerConfigRef:
+    name: http-cloudflare
+  forProvider:
+    headers:
+      Content-Type:
+        - application/json
+      Authorization:
+        - ("Bearer {{ cloudflare:crossplane-system:token }}")
+    payload:
+      baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records 
+      body: |
+        {
+          "name": "argocd",
+          "content": "192.168.10.240",
+          "comment": "Internal ArgoCD UI",
+          "ttl": 0,
+          "type": "A"
+        }
+    mappings:
+      - action: CREATE 
+        method: "POST" 
+        body: |
+          {
+            comment: .payload.body.comment, 
+            content: .payload.body.content, 
+            name: .payload.body.name,
+            ttl: .payload.body.ttl,
+            type: .payload.body.type
+          }
+        url: .payload.baseUrl
+      - action: OBSERVE 
+        method: "GET"
+        url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
+      - action: UPDATE
+        method: "PATCH"
+        body: |
+          {
+            comment: .payload.body.comment, 
+            content: .payload.body.content, 
+            name: .payload.body.name,
+            ttl: .payload.body.ttl,
+            type: .payload.body.type
+          }
+        url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
+      - action: REMOVE 
+        method: "DELETE"
+        url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
+---
+# Source: cloudflare-http/templates/dns.yaml
+apiVersion: http.crossplane.io/v1alpha2
+kind: Request
+metadata:
+  name: cloudflare-dns-argowf
+spec:
+  providerConfigRef:
+    name: http-cloudflare
+  forProvider:
+    headers:
+      Content-Type:
+        - application/json
+      Authorization:
+        - ("Bearer {{ cloudflare:crossplane-system:token }}")
+    payload:
+      baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records 
+      body: |
+        {
+          "name": "argowf",
+          "content": "192.168.10.240",
+          "comment": "Internal Argo Workflows UI",
+          "ttl": 0,
+          "type": "A"
+        }
+    mappings:
+      - action: CREATE 
+        method: "POST" 
+        body: |
+          {
+            comment: .payload.body.comment, 
+            content: .payload.body.content, 
+            name: .payload.body.name,
+            ttl: .payload.body.ttl,
+            type: .payload.body.type
+          }
+        url: .payload.baseUrl
+      - action: OBSERVE 
+        method: "GET"
+        url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
+      - action: UPDATE
+        method: "PATCH"
+        body: |
+          {
+            comment: .payload.body.comment, 
+            content: .payload.body.content, 
+            name: .payload.body.name,
+            ttl: .payload.body.ttl,
+            type: .payload.body.type
+          }
+        url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
+      - action: REMOVE 
+        method: "DELETE"
+        url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
+---
+# Source: cloudflare-http/templates/dns.yaml
+apiVersion: http.crossplane.io/v1alpha2
+kind: Request
+metadata:
+  name: cloudflare-dns-grafana
+spec:
+  providerConfigRef:
+    name: http-cloudflare
+  forProvider:
+    headers:
+      Content-Type:
+        - application/json
+      Authorization:
+        - ("Bearer {{ cloudflare:crossplane-system:token }}")
+    payload:
+      baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records 
+      body: |
+        {
+          "name": "grafana",
+          "content": "192.168.10.240",
+          "comment": "Internal Grafana UI",
+          "ttl": 0,
+          "type": "A"
+        }
+    mappings:
+      - action: CREATE 
+        method: "POST" 
+        body: |
+          {
+            comment: .payload.body.comment, 
+            content: .payload.body.content, 
+            name: .payload.body.name,
+            ttl: .payload.body.ttl,
+            type: .payload.body.type
+          }
+        url: .payload.baseUrl
+      - action: OBSERVE 
+        method: "GET"
+        url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
+      - action: UPDATE
+        method: "PATCH"
+        body: |
+          {
+            comment: .payload.body.comment, 
+            content: .payload.body.content, 
+            name: .payload.body.name,
+            ttl: .payload.body.ttl,
+            type: .payload.body.type
+          }
+        url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
+      - action: REMOVE 
+        method: "DELETE"
+        url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
+---
+# Source: cloudflare-http/templates/dns.yaml
+apiVersion: http.crossplane.io/v1alpha2
+kind: Request
+metadata:
+  name: cloudflare-dns-prometheus
+spec:
+  providerConfigRef:
+    name: http-cloudflare
+  forProvider:
+    headers:
+      Content-Type:
+        - application/json
+      Authorization:
+        - ("Bearer {{ cloudflare:crossplane-system:token }}")
+    payload:
+      baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records 
+      body: |
+        {
+          "name": "prometheus",
+          "content": "192.168.10.240",
+          "comment": "Internal Prometheus UI",
+          "ttl": 0,
+          "type": "A"
+        }
+    mappings:
+      - action: CREATE 
+        method: "POST" 
+        body: |
+          {
+            comment: .payload.body.comment, 
+            content: .payload.body.content, 
+            name: .payload.body.name,
+            ttl: .payload.body.ttl,
+            type: .payload.body.type
+          }
+        url: .payload.baseUrl
+      - action: OBSERVE 
+        method: "GET"
+        url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
+      - action: UPDATE
+        method: "PATCH"
+        body: |
+          {
+            comment: .payload.body.comment, 
+            content: .payload.body.content, 
+            name: .payload.body.name,
+            ttl: .payload.body.ttl,
+            type: .payload.body.type
+          }
+        url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
+      - action: REMOVE 
+        method: "DELETE"
+        url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))

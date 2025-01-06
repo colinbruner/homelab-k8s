@@ -1,0 +1,17 @@
+---
+
+provider:
+  http:
+    dns_records:
+      - name: "argocd"
+        content: "192.168.10.240"
+        comment: "Internal ArgoCD UI"
+      - name: "argowf"
+        content: "192.168.10.240"
+        comment: "Internal Argo Workflows UI"
+      - name: "grafana"
+        content: "192.168.10.240"
+        comment: "Internal Grafana UI"
+      - name: "prometheus"
+        content: "192.168.10.240"
+        comment: "Internal Prometheus UI"

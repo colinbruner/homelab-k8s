@@ -8,4 +8,4 @@ resources:
   - resources/providers.yaml 
   - resources/secrets.yaml 
   # DNS
-  - resources/cloudflare.yaml 
+  - resources/cloudflare # NOTE: generated via generate.sh

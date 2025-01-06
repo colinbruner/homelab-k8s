@@ -1,0 +1,8 @@
+---
+
+provider: 
+  http: 
+    dns_records:
+    - name: "whatever"        # subdomain
+      content: "x.x.x.x"      # IP Address
+      comment: "some comment" # arbitrary comment
