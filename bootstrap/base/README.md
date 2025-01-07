@@ -1,7 +1,8 @@
-# Base
+# Bootstrap
+
 The following are organized as cluster wide "base" or "essential" services for cluster automation and operation.
 
-## Services:
+## Base
 
 ### Secrets
 
@@ -15,14 +16,16 @@ The following are organized as cluster wide "base" or "essential" services for c
 
 ### Infra
 
-- argocd: is used to installed all other applications outside of base, as well as manage those applications within base
-- argowf: used for running jobs, workflows, crons, etc.
 - crossplane: for adding DNS records in Cloudflare for coordination with cert-manager
 
-### Monitoring
+## CICD
+
+- argocd: is used to installed all other applications outside of base, as well as manage those applications within base
+- argowf: used for running jobs, workflows, crons, etc.
+
+## Monitoring
 
 Grafana Prometheus for easy monitoring dashboards and metrics scraping.
 
 - grafana: install grafana-operator
 - prometheus: install prometheus-operator, this is a bit more custom (jsonnet)
-

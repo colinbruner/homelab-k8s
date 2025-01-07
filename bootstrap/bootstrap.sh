@@ -26,11 +26,16 @@ function install_component() {
 }
 
 ###
-# Initial Apps
+# Bootstrap Base
+###
+./bootstrap/install.sh
+
+###
+# Install CICD & Monitoring
 ###
 # NOTE: Only these apps are 'bootstrapped', 
 # everything else should be managed by ArgoCD
 ###
-install_component "argo"
+install_component "cicd"
 install_namespace "monitoring"
 install_component "monitoring"
