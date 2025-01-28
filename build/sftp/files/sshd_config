@@ -1,0 +1,17 @@
+# SSHD Configuration for Hardened SFTP Server
+
+AuthorizedKeysFile /etc/ssh/authorized_keys
+
+# Chroot the SFTP users to their home directory
+Subsystem sftp internal-sftp
+Match User scanner
+  ChrootDirectory /home/%u
+  PasswordAuthentication no
+  ForceCommand internal-sftp
+  AllowTcpForwarding no
+  X11Forwarding no
+  PermitTunnel no
+  AllowAgentForwarding no
+
+# Logging
+LogLevel VERBOSE

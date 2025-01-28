@@ -10,12 +10,14 @@ The goal is to bootstrap the "base services" manually, plus ArgoCD, then configu
 
 There are two major components [base](./base) and [apps](./apps).
 
-- base: these are the cluster level components required.
-- apps: this is essentially everything else, base components support these.
+- base: these are the cluster level components required for operation and management.
+- apps: this is essentially everything else. Base components support these.
 
 ![Homelab Dependencies](./assets/dependencies.png)
 
-## Bootstrapping
+## Structure
+
+### Bootstrapping
 
 Running [base/boopstrap.sh](./base/boostrap.sh) or [apps](./apps/bootstrap.sh) will execute all `install.sh` scripts within their respective directories.
 
@@ -28,6 +30,10 @@ These scripts are intended to be idemponent and only make changes when their tar
 ./bootstrap.sh
 ```
 
-## Services
+### Build
+
+For more information about the container images in `build`, view [build/README.md](./build/README.md).
+
+### Services
 
 For more information about the `base` services installed, view [base/README.md](./base/README.md).
