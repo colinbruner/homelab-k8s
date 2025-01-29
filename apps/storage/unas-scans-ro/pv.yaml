@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: unas-documents-ro
+  name: unas-scans-ro
 spec:
   capacity:
     storage: 1Ti
@@ -12,5 +12,5 @@ spec:
   mountOptions: 
     - hard 
   nfs:
-    path: /var/nfs/shared/Documents
+    path: /var/nfs/shared/scans
     server: 192.168.10.5
