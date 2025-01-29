@@ -2,11 +2,14 @@ name: Build Container
 
 on:
   push:
+    paths:
+      - build/**
   pull_request:
   workflow_dispatch:
 
 jobs:
   build_and_push:
+    # TODO: iterate and build all Containerfiles in build/
     name: Build Containers
     runs-on: ubuntu-latest
     permissions:
