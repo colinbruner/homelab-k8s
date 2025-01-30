@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: unas-scans-ro-claim
+  name: unas-scans-rw-claim
 spec:
   accessModes:
-    - ReadOnlyMany
-  volumeName: unas-scans-ro
+    - ReadWriteOnce
+  volumeName: unas-scans-rw
   storageClassName: nfs
   resources:
     requests:

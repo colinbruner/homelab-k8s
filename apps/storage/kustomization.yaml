@@ -3,4 +3,4 @@ kind: Kustomization
 
 resources:
   - unas-k8s-rw
-  - unas-documents-ro
+  - unas-scans-rw

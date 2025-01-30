@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sftp
+  labels:
+    app: sftp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sftp
+  template:
+    metadata:
+      labels:
+        app: sftp
+    spec:
+      containers:
+      - name: sftp
+        image: despitehowever/sftp:latest
+        ports:
+        - containerPort: 22
+        volumeMounts:
+        - mountPath: /home/scanner/in
+          name: scans-pvc
+      volumes:
+      - name: scans-pvc
+        persistentVolumeClaim:
+          claimName: unas-scans-rw-claim
