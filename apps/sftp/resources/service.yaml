@@ -10,3 +10,4 @@ spec:
     - protocol: TCP
       port: 22
       targetPort: 22
+  type: LoadBalancer
