@@ -1,11 +1,11 @@
 # SSHD Configuration for Hardened SFTP Server
 
 AuthorizedKeysFile /etc/ssh/authorized_keys
+HostKey /var/sftp-key/private-key
 
 # Chroot the SFTP users to their home directory
 Subsystem sftp internal-sftp
 Match User scanner
-  HostKey /var/sftp-key/private-key
   ChrootDirectory /home/%u
   PasswordAuthentication no
   ForceCommand internal-sftp
