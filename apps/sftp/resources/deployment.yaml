@@ -24,11 +24,11 @@ spec:
           name: scans-pvc
         - mountPath: "/var/sftp-key"
           name: sftp-hostkey
-          readOnly: true
       volumes:
       - name: scans-pvc
         persistentVolumeClaim:
           claimName: unas-scans-rw-claim
       - name: sftp-hostkey
         secret:
+          defaultMode: 0600
           secretName: sftp-hostkey
