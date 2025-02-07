@@ -16,4 +16,4 @@ Match User scanner
   AllowAgentForwarding no
 
 # Logging
-LogLevel VERBOSE
+LogLevel DEBUG3
