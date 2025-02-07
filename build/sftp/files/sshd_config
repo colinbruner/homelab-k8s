@@ -2,6 +2,7 @@
 
 AuthorizedKeysFile /etc/ssh/authorized_keys
 HostKey /var/sftp-key/private-key
+IgnoreUserKnownHosts yes
 
 # Chroot the SFTP users to their home directory
 Subsystem sftp internal-sftp
