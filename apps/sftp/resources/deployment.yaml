@@ -17,6 +17,7 @@ spec:
       containers:
       - name: sftp
         image: despitehowever/sftp:latest
+        imagePullPolicy: Always # NOTE: need this for, lazy image tagging
         ports:
         - containerPort: 22
         volumeMounts:
