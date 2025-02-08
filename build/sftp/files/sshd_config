@@ -1,11 +1,11 @@
-# SSHD Configuration for Hardened SFTP Server
+# SSHD Configuration for (sort of) Hardened SFTP Server
 
 AuthorizedKeysFile /etc/ssh/authorized_keys
 HostKey /var/sftp-key/private-key
 IgnoreUserKnownHosts yes
 
 HostKeyAlgorithms +ssh-rsa
-PubkeyAcceptedAlgorithms +*
+#PubkeyAcceptedAlgorithms 
 
 # Chroot the SFTP users to their home directory
 Subsystem sftp internal-sftp
