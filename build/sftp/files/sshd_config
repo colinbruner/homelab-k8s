@@ -4,7 +4,7 @@ AuthorizedKeysFile /etc/ssh/authorized_keys
 HostKey /var/sftp-key/private-key
 IgnoreUserKnownHosts yes
 
-HostKeyAlgorithms +*
+HostKeyAlgorithms +ssh-rsa
 PubkeyAcceptedAlgorithms +*
 
 # Chroot the SFTP users to their home directory
