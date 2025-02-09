@@ -20,6 +20,13 @@ spec:
         imagePullPolicy: Always # NOTE: need this for, lazy image tagging
         ports:
         - containerPort: 22
+        resources:
+          requests:
+            cpu: 10m
+            memory: 50Mi
+          limits:
+            cpu: 100m
+            memory: 500Mi
         volumeMounts:
         - mountPath: /home/scanner/in
           name: scans-pvc
