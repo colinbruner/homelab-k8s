@@ -35,9 +35,7 @@ function install_1password() {
 
 if [[ ! $(kubens | grep "1password") == "1password" ]]; then
     echo "[INFO]: Installing 1Password Operator.."
-    echo ./1password/install.sh
+    install_1password
 else
     echo "[INFO]: 1Password namespace already exists. Continuing.."
 fi
-
-exit

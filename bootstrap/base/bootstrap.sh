@@ -36,7 +36,7 @@ function install_component() {
 ###
 # Base
 ###
-install_1password
+install_component "secrets"
 install_component "network"
 install_component "infra"
 
