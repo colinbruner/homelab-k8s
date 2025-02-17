@@ -1,0 +1,31 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: kopia
+
+resources:
+  - resources/namespace.yaml
+  - resources/pvc-docs.yaml
+  - resources/pvc-config.yaml
+  - resources/kopia-password.yaml
+  - resources/deployment.yaml
+  - resources/service.yaml
+  #- resources/ingress.yaml
+
+configMapGenerator:
+  - name: kopia-config
+    files:
+      - ./config/repository.config
+
+images:
+- name: kopia/kopia
+  newTag: 20250203.0.153817
+
+labels:
+- includeSelectors: true
+  pairs:
+    app.kubernetes.io/component: kopia
+    app.kubernetes.io/instance: kopia
+    app.kubernetes.io/name: kopia
+    app.kubernetes.io/part-of: kopia
+    k8s-app: kopia
