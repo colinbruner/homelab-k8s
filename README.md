@@ -4,24 +4,40 @@ The following files are used to deploy resources onto my homelab kubernetes clus
 
 I'm trying to work out the directory structure a bit, so this is all likely to change frequently as I develop a framework.
 
-## Design
+# Design
 
-The goal is to bootstrap the "base services" manually, plus ArgoCD, then configure everything within ArgoCD to be deployed and managed through CD.
+The goal of this is to, given a configured kubernetes cluster, bootstrap all cluster wide applications through a simple bootstrap.sh script.
 
-There are two major components [base](./base) and [apps](./apps).
+# Structure
 
-- base: these are the cluster level components required for operation and management.
-- apps: this is essentially everything else. Base components support these.
+Each of the following sub-sections is intended to represent a directory at the root of this repository.
 
-![Homelab Dependencies](./assets/dependencies.png)
+## Automation
 
-## Structure
+This contains code for automating my homelab kubernetes cluster. This is the first step of merging code in my private repo to live alongside this code.
+
+## Build
+
+This contains code to build various artifacts, typically containers.
+
+For more information about the container images in `build`, view [build/README.md](./build/README.md).
+
+## K8s
+
+There are two major components [bootstrap](./k8s/bootstrap) and [apps](./k8s/apps).
+
+- bootstrap: these are the cluster level components required for operation and management. Run once.
+- apps: this is essentially everything else. Base components support these. Managed through ArgoCD.
+
+> NOTE: Components in bootstrap are intended to be run once. Everything else, including additional manifests building upon bootstrapped components should live within apps and be managed by ArgoCD.
+
+![Homelab Dependencies](./docs/assets/dependencies.png)
 
 ### Bootstrapping
 
-Running [base/boopstrap.sh](./base/boostrap.sh) or [apps](./apps/bootstrap.sh) will execute all `install.sh` scripts within their respective directories.
+Running [boopstrap.sh](./k8s/bootstrap/boostrap.sh) will simply recursively execute any `install.sh` executable scripts found within all child directories.
 
-These scripts are intended to be idemponent and only make changes when their target namespace does NOT exist.
+These scripts are intended to be idemponent and only make changes when their target namespace, or a custom written condition, does NOT exist.
 
 ```bash
 # Expects the following:
@@ -30,10 +46,6 @@ These scripts are intended to be idemponent and only make changes when their tar
 ./bootstrap.sh
 ```
 
-### Build
+### Apps
 
-For more information about the container images in `build`, view [build/README.md](./build/README.md).
-
-### Services
-
-For more information about the `base` services installed, view [base/README.md](./base/README.md).
+These are applications intended to installed after bootstrap and managed through ArgoCD.
