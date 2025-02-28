@@ -1,0 +1,50 @@
+---
+# defaults file for pxe
+packages:
+  - xinetd # rsyslog and init script utilities
+  - tftpd-hpa # serves pxeboot menu, files, vmlinuz, etc
+  - nginx # serves ISOs
+  - nfs-common # mounting nfs share
+
+# these packages provide ipxe files to serve over tftp
+ipxe_packages:
+  - ipxe
+  - grub-efi-amd64-signed
+  - shim-signed
+
+directories:
+  # contains vmlinuz, initrd, etc
+  - /srv/tftp/images
+  # files served by NGINX (e.g. ISOs)
+  - /srv/http
+
+# The path on the PXE server to mount 'nfs_server_share_path'
+pxe_nfs_share_path: "/srv/"
+# IP Address or DNS for PXE Server (tftp, nginx)
+pxe_server_addr: "192.168.10.4"
+# The NGINX root path to serve images from
+pxe_http_root_path: "/srv/http"
+# The path to copy vmlinuz, initrd, etc
+pxe_tftp_boot_path: "/srv/tftp/images"
+
+# IP Address or DNS for NFS Server (images/isos)
+nfs_server_addr: "192.168.10.5"
+# The NFS Server Share to mount locally to PXE Server
+nfs_server_share_path: "/var/nfs/shared/pxe"
+
+# default ipxe installed files to copy and serve via tftp
+ipxe_files_served_by_tftp:
+  #- /usr/lib/ipxe/undionly.kpxe # NOTE: Custom built, installed from files/undionly.kpxe
+  - /usr/lib/ipxe/ipxe.efi
+  - /usr/lib/ipxe/snponly.efi
+
+grub_files_served_by_tftp:
+  - /usr/lib/shim/shimx64.efi.signed
+  - /usr/lib/grub/x86_64-efi-signed/grubnetx64.efi.signed
+
+###
+# Talos
+###
+talos_linux_architectures:
+  - amd64
+  - arm64

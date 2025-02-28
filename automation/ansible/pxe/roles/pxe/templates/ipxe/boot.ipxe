@@ -1,0 +1,5 @@
+#!ipxe
+
+kernel tftp://{{ pxe_server_addr }}/images/talos/{{ talos_linux_version }}/amd64/vmlinuz initrd=initramfs.xz console=tty0 console=ttyS1,115200 selinux=0 biosdevname=0 init_on_alloc=1 slab_nomerge pti=on printk.devkmsg=on talos.platform=metal ip=dhcp
+initrd tftp://{{ pxe_server_addr }}/images/talos/{{ talos_linux_version }}/amd64/initramfs.xz
+boot

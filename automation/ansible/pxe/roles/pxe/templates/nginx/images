@@ -1,0 +1,8 @@
+server {
+    server_name {{ pxe_server_addr }};
+    root {{ pxe_http_root_path }};
+    index index.html;
+    location / {
+        try_files $uri =404;
+    }
+}

@@ -1,0 +1,6 @@
+- hosts: all
+  vars:
+    download_images: false # NOTE: Override via CLI
+  roles:
+    - role: pxe
+      become: true

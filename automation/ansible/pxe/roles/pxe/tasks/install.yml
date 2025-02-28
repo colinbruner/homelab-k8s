@@ -1,0 +1,8 @@
+---
+
+  # NOTE: Installing both pxelinux / ipxe packages
+  # if only relying on 1, this can be tweaked
+- name: install required packages
+  ansible.builtin.apt:
+    pkg: "{{ packages + ipxe_packages }}"
+    update_cache: true

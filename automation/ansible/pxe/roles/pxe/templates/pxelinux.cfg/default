@@ -1,0 +1,14 @@
+UI menu.c32
+
+LABEL Install Talos v1.17.4 AMD64
+    KERNEL images/talos/v1.7.4/amd64/vmlinuz
+    INITRD images/talos/v1.7.4/amd64/initramfs.xz
+    APPEND console=tty0 console=ttyS1,115200 selinux=0 biosdevname=0 init_on_alloc=1 slab_nomerge pti=on printk.devkmsg=on talos.platform=metal ip=dhcp
+
+LABEL Install Ubuntu 22.04.4 server
+    KERNEL images/ubuntu/22.04.4/vmlinuz
+    INITRD images/ubuntu/22.04.4/initrd
+    APPEND root=/dev/ram0 ramdisk_size=1500000ip=dhcp autoinstall ds=nocloud-net cloud-init=disabled url=http://{{ pxe_server_addr }}/images/ubuntu-22.04.4-live-server-amd64.iso
+
+LABEL Boot from disk
+    LOCALBOOT 0

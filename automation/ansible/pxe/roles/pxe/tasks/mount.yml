@@ -1,0 +1,19 @@
+---
+
+# Mount NFS Mount NAS Server images directory to PXE Server
+- name: mount nfs image volume
+  ansible.posix.mount:
+    src: "{{ nfs_server_addr }}:{{ nfs_server_share_path }}"
+    path: "{{ pxe_nfs_share_path }}"
+    opts: rw,sync,hard
+    boot: false
+    state: mounted
+    fstype: nfs
+
+- name: ensure directories on nfs mount
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop: "{{ directories }}"
+

@@ -1,0 +1,44 @@
+---
+
+###
+# NOTE: setting 'tftp' as owner/group throws errors now 
+#       that we're writing all of this to an NFS share
+###
+
+- name: install ipxe files
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "/srv/tftp/{{ item | basename }}"
+    remote_src: true
+  loop: "{{ ipxe_files_served_by_tftp + grub_files_served_by_tftp }}"
+
+  # NOTE: see build/README.md in git root
+- name: install custom undionly.kpxe file
+  ansible.builtin.copy:
+    src: undionly.kpxe 
+    dest: /srv/tftp/
+  notify: restart tftpd
+
+- name: template boot.ipxe
+  ansible.builtin.template:
+    src: ipxe/boot.ipxe
+    dest: /srv/http/boot.ipxe
+
+- name: update tftpd defaults
+  ansible.builtin.lineinfile:
+    path: /etc/default/tftpd-hpa
+    regexp: '^TFTP_OPTIONS='
+    line: TFTP_OPTIONS="--secure --verbose"
+  notify: restart tftpd
+
+- name: create nginx images route
+  ansible.builtin.template:
+    src: nginx/images
+    dest: /etc/nginx/sites-available/images
+
+- name: enable nginx images route
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/images
+    dest: /etc/nginx/sites-enabled/images
+    state: link
+  notify: restart nginx

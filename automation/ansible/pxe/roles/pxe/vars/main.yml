@@ -1,0 +1,13 @@
+---
+# vars file for pxe
+
+###
+# TODO: Move to vars outside role?
+###
+# The Ubuntu versions to download vmlinuz and initrd from
+ubuntu_versions:
+  - 22.04.4
+
+# The Talos version to download vmlinuz and initramfs from
+# NOTE: old versions will not be automatically cleaned up
+talos_linux_version: v1.7.4
