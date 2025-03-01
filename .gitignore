@@ -7,3 +7,5 @@
 
 **secret.yaml**
 
+# cloned repo might exist, conscious choice not to use submodules
+build/ipxe/ipxe

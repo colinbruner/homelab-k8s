@@ -1,0 +1,4 @@
+#!ipxe
+
+dhcp
+chain http://192.168.10.4/boot.ipxe
