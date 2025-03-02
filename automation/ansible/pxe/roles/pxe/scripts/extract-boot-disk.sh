@@ -29,8 +29,8 @@ function extract_ubuntu_isos() {
         # Mount the ISO at /mnt/
         mount -o ro,loop $path /mnt
         # Copy version specific boot files
-        cp /mnt/casper/vmlinuz $vmlinuz_path
-        cp /mnt/casper/initrd $initrd_path
+        cp /mnt/casper/vmlinuz $vmlinuz_path && chmod 644 $vmlinuz_path
+        cp /mnt/casper/initrd $initrd_path && chmod 644 $initrd_path
         # unmount the ISO
         umount /mnt
         CHANGED=true

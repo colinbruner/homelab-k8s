@@ -17,12 +17,15 @@
   ansible.builtin.copy:
     src: undionly.kpxe 
     dest: /srv/tftp/
+    mode: "644" # NOTE: tftp served files must be globally readable
   notify: restart tftpd
 
 - name: template boot.ipxe
   ansible.builtin.template:
     src: ipxe/boot.ipxe
+    mode: "644" # NOTE: tftp served files must be globally readable
     dest: /srv/http/boot.ipxe
+  notify: restart nginx
 
 - name: update tftpd defaults
   ansible.builtin.lineinfile:
