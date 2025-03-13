@@ -1,3 +1,3 @@
 # Apps
 
-These are applications installed post-bootstrap.
+These are applications or configurations installed / applied post-bootstrap.
