@@ -8,8 +8,8 @@ RUN apk update && \
 
 # Create an nfs group + scanner user for SFTP
 RUN addgroup -g 988 nfs && \
-    addgroup scanner nfs && \
     adduser -D -s /sbin/nologin scanner && \
+    addgroup scanner nfs && \
     echo 'scanner:*' | chpasswd
 
 # Create scanner homedir
