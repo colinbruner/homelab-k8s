@@ -5,6 +5,6 @@ namespace: sftp
 resources:
   - resources/namespace.yaml
   - resources/pvc.yaml
-  - resources/secret.yaml
+  - resources/onepassword-secret.yaml
   - resources/deployment.yaml
   - resources/service.yaml
