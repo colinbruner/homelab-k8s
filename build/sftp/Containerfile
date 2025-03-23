@@ -7,7 +7,7 @@ RUN apk update && \
     rm -rf /var/cache/apk/*
 
 # Create scanner user for SFTP, '988' is nfs mapped uid/gid for mounted dir
-RUN adduser -u 998 -D -s /sbin/nologin scanner && \
+RUN adduser -u 988 -D -s /sbin/nologin scanner && \
     echo 'scanner:*' | chpasswd
 
 # Create scanner homedir
