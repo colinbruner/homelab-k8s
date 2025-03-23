@@ -11,7 +11,7 @@ PubkeyAcceptedAlgorithms +ssh-rsa
 Subsystem sftp internal-sftp
 Match User scanner
   ChrootDirectory /home/%u
-  PasswordAuthentication no
+  PasswordAuthentication yes # NOTE: temp enable for testing
   ForceCommand internal-sftp
   AllowTcpForwarding no
   X11Forwarding no
