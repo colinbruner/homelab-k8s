@@ -6,8 +6,10 @@ RUN apk update && \
     apk add --no-cache openssh-server openssh-sftp-server && \
     rm -rf /var/cache/apk/*
 
-# Create a scanner user for SFTP
-RUN adduser -D -s /sbin/nologin scanner && \
+# Create an nfs group + scanner user for SFTP
+RUN addgroup -g 988 nfs && \
+    addgroup scanner nfs && \
+    adduser -D -s /sbin/nologin scanner && \
     echo 'scanner:*' | chpasswd
 
 # Create scanner homedir
