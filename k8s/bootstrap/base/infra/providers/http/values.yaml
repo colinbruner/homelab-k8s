@@ -22,3 +22,6 @@ provider:
       - name: "backups"
         content: "192.168.10.240"
         comment: "Koptia Backups UI"
+      - name: "uptime"
+        content: "192.168.10.240"
+        comment: "Kuma Uptime UI"
