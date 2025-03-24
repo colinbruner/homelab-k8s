@@ -9,3 +9,5 @@ secret.yaml**
 
 # cloned repo might exist, conscious choice not to use submodules
 build/ipxe/ipxe
+# binary generated in build/ipxe, moved under automation/ansible
+**.kpxe
