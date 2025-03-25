@@ -1,0 +1,14 @@
+---
+
+provider:
+  http:
+    dns_records:
+      - name: "sftp"
+        content: "192.168.10.241"
+        comment: "SFTP Access for Scans"
+      - name: "backups"
+        content: "192.168.10.240"
+        comment: "Koptia Backups UI"
+      - name: "uptime"
+        content: "192.168.10.240"
+        comment: "Kuma Uptime UI"
