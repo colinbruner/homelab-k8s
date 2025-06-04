@@ -1,0 +1,17 @@
+driver: 
+  name: "nfs.csi.k8s.io"
+
+storageClass:
+  create: true
+  name: nfs-csi
+  reclaimPolicy: Retain
+  parameters:
+    server: 192.168.10.5
+    share: /var/nfs/shared/k8s
+    subDir: namespaces/${pvc.metadata.namespace}/${pvc.metadata.name}
+  volumeBindingMode: Immediate
+  # NOTE: UNAS does not support v4 as of yet
+  mountOptions:
+    - vers=3
+    - nolock
+    #- hard
