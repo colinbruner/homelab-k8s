@@ -1,0 +1,15 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: nfs-csi-scans
+mountOptions:
+- vers=3
+- nolock
+parameters:
+  mountPermissions: "0666"
+  server: 192.168.10.5
+  share: /var/nfs/shared/scans
+provisioner: nfs.csi.k8s.io
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+allowVolumeExpansion: true

@@ -1,0 +1,26 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvc-nfs-scans
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: nfs-csi-scans
+#---
+#apiVersion: v1
+#kind: PersistentVolumeClaim
+#metadata:
+#  name: pvc-deployment-nfs
+#  namespace: default
+#spec:
+#  accessModes:
+#    - ReadWriteMany  # In this example, multiple Pods consume the same PVC.
+#  resources:
+#    requests:
+#      storage: 10Gi
+#  storageClassName: nfs-csi

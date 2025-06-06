@@ -3,6 +3,8 @@ kind: Kustomization
 
 resources:
   - resources/namespace.yaml
+  - resources/storageclass-documents.yaml
+  - resources/storageclass-scans.yaml
 
 helmCharts:
   - name: csi-driver-nfs
