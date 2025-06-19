@@ -1,0 +1,48 @@
+###
+# initContainer
+###
+- op: add
+  path: "/spec/template/spec/initContainers/0/env/-" # append
+  value:
+    name: BACKUP_TARGET
+    value: /Volumes/Photos
+
+###
+# Volumes
+###
+# Add backup specific volumes
+- op: add
+  path: "/spec/template/spec/volumes"
+  value:
+    - name: backup
+      persistentVolumeClaim:
+        claimName: backup
+    - name: config
+      persistentVolumeClaim:
+        claimName: config
+    - name: repo-config
+      configMap:
+        name: repo-config
+    - name: gcp-credentials
+      secret:
+        secretName: gcp-credentials
+        items:
+        - key: sa_json
+          path: credentials.json
+
+###
+# Mount Volumes
+###
+# Add backup specific volumeMounts
+- op: add
+  path: "/spec/template/spec/containers/0/volumeMounts"
+  value:
+    - name: backup
+      mountPath: /Volumes/Photos # Mimics OSX path
+      readOnly: true
+    - name: config
+      mountPath: /app
+      readOnly: false
+    - name: gcp-credentials
+      mountPath: /tmp/gcp
+      readOnly: true

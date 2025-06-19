@@ -1,0 +1,115 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backup
+  labels:
+    app.kubernetes.io/name: "kopia"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kopia
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: "kopia"
+    spec:
+      restartPolicy: Always
+      initContainers:
+        - name: init-repo
+          image: kopia/kopia:latest # TODO: kustomize replacements
+          securityContext:
+            allowPrivilegeEscalation: false
+          command:
+            - /bin/bash
+            - -c
+            - |-
+              mkdir -p /app/config && cp /kopia/repository.config $KOPIA_CONFIG_PATH
+
+              # no jq in kopia image, got to slum it with awk
+              BUCKET=$(cat $KOPIA_CONFIG_PATH | grep 'bucket' | awk '{gsub(/"|,/,"",$2); print $2}')
+
+              if [[ ! -f /app/cache/kopia.repository ]]; then
+                echo "[INFO]: Repository does not exist yet, creating..."
+                kopia repository create gcs \
+                  --bucket $BUCKET \
+                  --credentials-file /tmp/gcp/credentials.json
+              fi
+              echo "[INFO]: Repository Status.."
+              kopia repository status
+
+              echo "[INFO]: Checking for existing policies..."
+              BACKUP_POLICY=$(kopia policy list | grep $BACKUP_TARGET | wc -l)
+              if [[ ! -z $BACKUP_TARGET ]] && [[ $BACKUP_POLICY -eq 0 ]]; then
+                echo "[INFO]: No backup target found for '$BACKUP_TARGET' -- Creating policy..."
+                # NOTE: 'BACKUP_TARGET' to be injected as envvar by kustomize
+                kopia policy set \
+                  --compression="zstd-better-compression" \
+                  --snapshot-time-crontab="15 2 * * *" \
+                  $BACKUP_TARGET
+              else
+                echo "[INFO]: Backup target found for '$BACKUP_TARGET'"
+              fi
+          volumeMounts:
+            - name: config
+              mountPath: /app
+              readOnly: false
+            - name: repo-config
+              mountPath: /kopia/
+            - name: gcp-credentials
+              mountPath: /tmp/gcp
+              readOnly: true
+          env:
+            - name: "TZ"
+              value: "America/Chicago"
+            - name: KOPIA_CONFIG_PATH
+              value: /app/config/repository.config
+            - name: KOPIA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: backup
+                  key: password
+      containers:
+        - name: backup
+          image: kopia/kopia:latest # TODO kustomize replacements
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+          command: 
+            - /bin/bash
+            - -c
+            - |-
+              BUCKET=$(cat /app/config/repository.config | grep 'bucket' | awk '{gsub(/"|,/,"",$2); print $2}')
+              kopia server start --address=http://0.0.0.0:8080 --insecure --without-password
+              #echo "[INFO]: Connecting..."
+              #kopia repository connect gcs \
+              #  --bucket $BUCKET \
+              #  --credentials-file /tmp/gcp/credentials.json \
+              #  --config-file /app/config/repository.config
+              #kopia repository status
+              #sleep infinity
+          ports:
+            - name: main
+              containerPort: 8080
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 50Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          envFrom:
+            - secretRef:
+                name: "backup"
+          env:
+            - name: "TZ"
+              value: "America/Chicago"
+            - name: KOPIA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: backup
+                  key: password

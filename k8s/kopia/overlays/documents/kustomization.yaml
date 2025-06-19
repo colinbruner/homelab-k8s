@@ -1,0 +1,30 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: backup-documents
+resources:
+  - resources/namespace.yaml
+  - ../../base/
+
+configMapGenerator:
+  - name: repo-config
+    files:
+      - ./config/repository.config
+
+patches:
+ - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: backup
+   path: patches/deployment.yaml
+ - target:
+      version: v1
+      kind: PersistentVolume
+      name: backup
+   path: patches/pv.yaml
+ - target:
+      version: v1
+      kind: PersistentVolumeClaim
+      name: backup
+   path: patches/pvc.yaml

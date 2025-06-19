@@ -1,0 +1,22 @@
+###
+# NOTE: This is the PV that this instance of Kopia will backup
+# values replaced by Kustomize:
+# - metadata.name: becomes backup-<volume>
+# - nfs.path: path on the NFS share to backup
+###
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: backup
+spec:
+  accessModes:
+    - ReadOnlyMany
+  capacity:
+    storage: 1Ti
+  mountOptions: 
+    - hard 
+  nfs:
+    server: 192.168.10.5
+    path: REPLACE
+  storageClassName: nfs
+  volumeMode: Filesystem

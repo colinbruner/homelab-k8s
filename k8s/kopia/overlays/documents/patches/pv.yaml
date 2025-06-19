@@ -1,0 +1,6 @@
+- op: replace
+  path: "/metadata/name"
+  value: backup-documents
+- op: replace
+  path: "/spec/nfs/path"
+  value: /var/nfs/shared/Documents

@@ -1,0 +1,32 @@
+---
+###
+# NOTE: This is Kopia's PVC for application configurations
+# This is a dynamic volume generated through csi-nfs. 
+###
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: config
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: nfs-csi
+###
+# NOTE: This is the PVC that this instance of Kopia will backup
+# The 'volumeName' attribute is added through kustomize to map to a PV.
+###
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: backup
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 1000Gi
+  storageClassName: nfs
