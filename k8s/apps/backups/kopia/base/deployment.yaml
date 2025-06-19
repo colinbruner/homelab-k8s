@@ -48,7 +48,7 @@ spec:
                 # NOTE: 'BACKUP_TARGET' to be injected as envvar by kustomize
                 kopia policy set \
                   --compression="zstd-better-compression" \
-                  --snapshot-time-crontab="15 2 * * *" \
+                  --snapshot-time-crontab="15 4 * * *" \
                   $BACKUP_TARGET
               else
                 echo "[INFO]: Backup target found for '$BACKUP_TARGET'"
