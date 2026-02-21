@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama
+  namespace: ollama
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ollama
+  template:
+    metadata:
+      labels:
+        app: ollama
+    spec:
+      # Pin to worker-06 — has the most available memory (~3.1Gi free)
+      nodeSelector:
+        kubernetes.io/hostname: worker-06
+      initContainers:
+      - name: model-pull
+        image: ollama/ollama:latest
+        command:
+        - sh
+        - -c
+        - |
+          ollama serve &
+          until ollama list >/dev/null 2>&1; do sleep 1; done
+          ollama pull llama3.2:3b
+        env:
+        - name: OLLAMA_HOST
+          value: "0.0.0.0"
+        resources:
+          requests:
+            cpu: 500m
+            memory: 2Gi
+          limits:
+            cpu: "1800m"
+            memory: 3Gi
+        volumeMounts:
+        - name: ollama-data
+          mountPath: /root/.ollama
+      containers:
+      - name: ollama
+        image: ollama/ollama:latest
+        ports:
+        - name: http
+          containerPort: 11434
+        env:
+        - name: OLLAMA_HOST
+          value: "0.0.0.0"
+        resources:
+          requests:
+            cpu: 500m
+            memory: 2Gi
+          limits:
+            cpu: "1800m"
+            memory: 3Gi
+        volumeMounts:
+        - name: ollama-data
+          mountPath: /root/.ollama
+        readinessProbe:
+          httpGet:
+            path: /api/tags
+            port: 11434
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 11434
+          initialDelaySeconds: 30
+          periodSeconds: 30
+      volumes:
+      - name: ollama-data
+        persistentVolumeClaim:
+          claimName: ollama-data
