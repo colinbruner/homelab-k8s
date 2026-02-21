@@ -48,6 +48,17 @@ Then set their password via the CLI after pushing (see provisioning steps below)
 
 ## Initial Provisioning
 
+A helper script `setup-users.sh` automates the steps below. It retrieves the initial admin
+password from the cluster, logs in, sets the `colin` account password interactively, then
+re-disables the admin account:
+
+```bash
+# Optionally override the ArgoCD hostname (defaults to argocd.colinbruner.com)
+ARGOCD_HOST=argocd.colinbruner.com ./setup-users.sh
+```
+
+### Manual Steps
+
 The built-in `admin` account is disabled in `argocd-cm`. To provision user accounts on a
 fresh cluster you must temporarily re-enable it, set passwords via CLI, then disable it again.
 
