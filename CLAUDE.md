@@ -6,9 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Homelab Kubernetes configuration repo. The cluster runs Talos Linux (PXE-provisioned via Ansible), managed with a GitOps approach using ArgoCD.
 
-Two major layers:
-- **`k8s/bootstrap/`** — One-time cluster-wide setup (networking, secrets, monitoring, ArgoCD). Run via `bootstrap.sh`.
-- **`k8s/apps/`** — Everything else; managed by ArgoCD after bootstrap.
+Four major layers:
+- **`k8s/bootstrap/`** — One-time cluster-wide setup (secrets, networking, infrastructure, CI/CD, monitoring). Run via `bootstrap.sh`.
+- **`k8s/namespaces/`** — ArgoCD-managed apps, one directory per Kubernetes namespace.
+- **`k8s/bases/`** — Shared Kustomize bases referenced by namespace overlays.
+- **`k8s/cluster/`** — Cluster-scoped resources (PersistentVolumes).
 
 ## Required Tooling
 
@@ -24,17 +26,17 @@ Scripts expect these in `PATH`: `kubectl`, `kustomize`, `kfilt`, `yq`, `helm`, `
 
 ### Apply Kustomize manifests
 ```bash
-kustomize build k8s/apps/<app> | kubectl apply -f -
+kustomize build k8s/namespaces/<namespace> | kubectl apply -f -
 ```
 
 ### Dry-run / diff before applying
 ```bash
-kustomize build k8s/apps/<app> | kubectl diff -f -
+kustomize build k8s/namespaces/<namespace> | kubectl diff -f -
 ```
 
 ### Build Prometheus manifests from Jsonnet
 ```bash
-# From k8s/bootstrap/monitoring/prometheus-operator/
+# From k8s/bootstrap/monitoring/prometheus/build/
 jb install
 jsonnet -J vendor main.jsonnet | gojsonyaml > manifests.yaml
 ```
@@ -54,22 +56,31 @@ docker build -f build/<name>/Containerfile -t <image> build/<name>/
 4. **CI/CD**: `argocd` → `argowf` (Argo Workflows)
 5. **Monitoring**: `prometheus-operator` + `grafana-operator`
 
-### Apps (ArgoCD-managed)
-Located in `k8s/apps/`. Notable apps:
-- **`kopia/`** — Backup jobs for UNAS NAS (documents/photos overlays)
-- **`n8n/`** — Workflow automation with PostgreSQL backend
-- **`crossplane/http/`** — Cloudflare DNS record CRDs
-- **`cicd/`** — ArgoCD and Argo Workflows user configurations
-- **`storage/`** — CSI-NFS driver + NFS PersistentVolumes for UNAS shares
+### Namespaces (ArgoCD-managed)
+Located in `k8s/namespaces/`, one directory per Kubernetes namespace:
+- **`argocd/`** — ArgoCD user configurations
+- **`backup-documents/`** — Kopia backup for UNAS documents (overlay of `bases/kopia`)
+- **`backup-photos/`** — Kopia backup for UNAS photos (overlay of `bases/kopia`)
+- **`crossplane-system/`** — Cloudflare DNS record CRDs
+- **`csi-nfs/`** — CSI-NFS driver and PVs for NFS shares
+- **`monitoring/`** — Grafana dashboards and datasources
+- **`monitoring-uptime/`** — Kuma uptime monitoring
+- **`sftp/`** — SFTP server deployment
+
+### Shared Bases
+Located in `k8s/bases/`:
+- **`kopia/`** — Shared Kustomize base for Kopia backup overlays
+
+### Cluster-Scoped Resources
+Located in `k8s/cluster/`:
+- **`storage/`** — NFS PersistentVolumes for UNAS shares (unas-k8s-rw, unas-docs-ro, unas-scans-rw, unas-uptime-rw)
 
 ### Configuration Patterns
 
 **Kustomize** is the primary composition tool. Structure follows base + overlays:
 ```
-k8s/apps/<app>/
-  base/           # Core manifests
-  overlays/       # Environment/variant-specific patches
-  kustomization.yaml
+k8s/bases/<base>/         # Shared core manifests
+k8s/namespaces/<ns>/      # Namespace-specific overlays referencing bases
 ```
 
 Helm charts are integrated via the `helmCharts` field in `kustomization.yaml` rather than standalone Helm releases.

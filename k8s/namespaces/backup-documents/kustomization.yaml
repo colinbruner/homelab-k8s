@@ -4,7 +4,7 @@ kind: Kustomization
 namespace: backup-documents
 resources:
   - resources/namespace.yaml
-  - ../../base/
+  - ../../bases/kopia/
 
 configMapGenerator:
   - name: repo-config
