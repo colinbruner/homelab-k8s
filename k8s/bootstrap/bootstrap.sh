@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 ###
-# Boootstrap Script
+# Bootstrap Script
 ###
 
 function install_namespace() {
@@ -26,14 +26,16 @@ function install_component() {
 }
 
 ###
-# Bootstrap Base
+# Bootstrap Base (secrets, networking, infrastructure)
 ###
-./bootstrap/install.sh
+install_component "secrets"
+install_component "network"
+install_component "infra"
 
 ###
 # Install CICD & Monitoring
 ###
-# NOTE: Only these apps are 'bootstrapped', 
+# NOTE: Only these apps are 'bootstrapped',
 # everything else should be managed by ArgoCD
 ###
 install_component "cicd"
