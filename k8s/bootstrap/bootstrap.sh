@@ -33,11 +33,11 @@ install_component "network"
 install_component "infra"
 
 ###
-# Install CICD & Monitoring
+# Install ArgoCD & Monitoring
 ###
 # NOTE: Only these apps are 'bootstrapped',
 # everything else should be managed by ArgoCD
 ###
-install_component "cicd"
+install_component "argocd"
 install_namespace "monitoring"
 install_component "monitoring"
