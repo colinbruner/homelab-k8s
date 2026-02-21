@@ -4,7 +4,8 @@ SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 NAMESPACE="argocd"
 
 function install_argo_cd() {
-    kustomize build $SCRIPTPATH | kubectl apply -f -
+    # --server-side required: applicationsets CRD exceeds client-side annotation size limit
+    kustomize build --enable-helm $SCRIPTPATH | kubectl apply --server-side --force-conflicts -f -
 }
 
 if [[ ! $(kubens | grep $NAMESPACE) =~ $NAMESPACE ]]; then

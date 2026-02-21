@@ -16,6 +16,10 @@ Four major layers:
 
 Scripts expect these in `PATH`: `kubectl`, `kustomize`, `kfilt`, `yq`, `helm`, `jsonnet`, `jb`
 
+## General Rules
+
+- Always use `trash` instead of `rm` when deleting files or directories.
+
 ## Common Commands
 
 ### Bootstrap the cluster
