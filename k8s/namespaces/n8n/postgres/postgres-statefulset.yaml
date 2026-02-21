@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: n8n
+spec:
+  serviceName: postgres-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      securityContext:
+        runAsUser: 977
+        runAsGroup: 988
+        fsGroup: 988
+      volumes:
+      - name: pg-hba-config
+        configMap:
+          name: postgres-hba-config
+      containers:
+      - name: postgres
+        image: postgres:17-alpine
+        args:
+        - "-c"
+        - "hba_file=/etc/postgresql/pg_hba.conf"
+        ports:
+        - containerPort: 5432
+        env:
+        - name: PGDATA
+          value: "/var/lib/postgresql/data/pgdata"
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: 1password-postgres
+              key: username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: 1password-postgres
+              key: password
+        - name: POSTGRES_DB
+          value: "n8n"
+        lifecycle:
+          postStart:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - |
+                until pg_isready -U n8n_user -d template1; do sleep 1; done
+                psql -U n8n_user -d template1 -tc "SELECT 1 FROM pg_database WHERE datname = 'n8n'" | grep -q 1 || psql -U n8n_user -d template1 -c "CREATE DATABASE n8n OWNER n8n_user;"
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        - name: pg-hba-config
+          mountPath: /etc/postgresql/pg_hba.conf
+          subPath: pg_hba.conf
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - n8n_user
+            - -d
+            - n8n
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - n8n_user
+            - -d
+            - n8n
+          initialDelaySeconds: 5
+          periodSeconds: 5
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: nfs-csi
+      resources:
+        requests:
+          storage: 20Gi

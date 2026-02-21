@@ -12,3 +12,6 @@ provider:
       - name: "uptime"
         content: "192.168.10.240"
         comment: "Kuma Uptime UI"
+      - name: "n8n"
+        content: "192.168.10.240"
+        comment: "n8n Workflow Automation UI"

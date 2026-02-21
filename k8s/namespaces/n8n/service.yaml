@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: n8n-ui
+spec:
+  selector:
+    app: n8n
+  ports:
+  - name: n8n-ui
+    protocol: TCP
+    port: 5678
+    targetPort: 5678
