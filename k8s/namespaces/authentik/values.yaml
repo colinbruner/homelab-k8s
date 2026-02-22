@@ -1,0 +1,129 @@
+## Authentik Helm chart values
+## chart: goauthentik/authentik 2024.12.3
+##
+## Social login (Google, Apple, GitHub, etc.) is configured post-deploy via
+## Authentik's admin UI at https://auth.colinbruner.com/if/admin/ under
+##   Directory → Federation & Social login → Sources → Create
+## See social-login-blueprint.yaml in this directory for reference config.
+
+global:
+  # Mount the social login blueprint ConfigMap into the worker so Authentik
+  # auto-discovers and applies it at startup.
+  volumes:
+    - name: social-blueprints
+      configMap:
+        name: authentik-social-blueprints
+  volumeMounts:
+    - name: social-blueprints
+      mountPath: /blueprints/custom
+
+  # Inject secrets from 1Password-managed k8s Secrets into all pods
+  # (authentik server + authentik worker)
+  env:
+    - name: AUTHENTIK_SECRET_KEY
+      valueFrom:
+        secretKeyRef:
+          name: 1password-authentik
+          key: secret_key
+    - name: AUTHENTIK_POSTGRESQL__PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: 1password-postgres
+          key: password
+
+authentik:
+  # Log level: debug | info | warning | error
+  log_level: info
+
+  # Cookie domain — must match the ingress host for SSO to work across subdomains
+  cookie_domain: "colinbruner.com"
+
+  # Email settings (optional — configure to enable email-based MFA / password reset)
+  # email:
+  #   host: smtp.example.com
+  #   port: 587
+  #   use_tls: true
+  #   username: ""
+  #   password: ""
+  #   from: authentik@colinbruner.com
+
+  postgresql:
+    # Connects to the bundled postgres subchart service
+    host: "authentik-postgresql"
+    name: authentik
+    user: authentik
+    # password sourced from AUTHENTIK_POSTGRESQL__PASSWORD env var above
+
+  redis:
+    # Connects to the bundled redis subchart service (no auth)
+    host: "authentik-redis-master"
+
+server:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  # Ingress managed externally in ingress.yaml
+  ingress:
+    enabled: false
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: false  # Enable when prometheus-operator is watching this namespace
+
+worker:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+# ─── Bundled PostgreSQL (bitnami/postgresql) ───────────────────────────────
+postgresql:
+  enabled: true
+  auth:
+    username: authentik
+    database: authentik
+    # Pulls password from the same 1password-postgres secret used above
+    existingSecret: 1password-postgres
+    secretKeys:
+      adminPasswordKey: password
+      userPasswordKey: password
+  primary:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    persistence:
+      enabled: true
+      storageClass: nfs-csi
+      size: 8Gi
+
+# ─── Bundled Redis (bitnami/redis) ─────────────────────────────────────────
+redis:
+  enabled: true
+  architecture: standalone
+  auth:
+    enabled: false
+  master:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi
+    persistence:
+      enabled: true
+      storageClass: nfs-csi
+      size: 1Gi
