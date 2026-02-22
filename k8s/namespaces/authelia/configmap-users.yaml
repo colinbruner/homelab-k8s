@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: authelia-users
+  namespace: authelia
+data:
+  # File-based user database for PoC.
+  #
+  # IMPORTANT: Replace the password hash below with one generated for your
+  # own password using:
+  #   docker run --rm authelia/authelia:4.38 authelia hash-password -- 'yourpassword'
+  #
+  # The placeholder hash below will NOT authenticate successfully.
+  users_database.yml: |
+    users:
+      admin:
+        displayname: "Admin"
+        # TODO: Replace with a real argon2id hash generated via:
+        #   docker run --rm authelia/authelia:4.38 authelia hash-password -- 'yourpassword'
+        password: "$argon2id$v=19$m=65536,t=3,p=4$REPLACEME$REPLACEME"
+        email: admin@colinbruner.com
+        groups:
+          - admins

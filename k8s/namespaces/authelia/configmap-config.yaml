@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: authelia-config
+  namespace: authelia
+data:
+  configuration.yml: |
+    server:
+      host: 0.0.0.0
+      port: 9091
+
+    log:
+      level: info
+
+    # jwt_secret, session.secret, and storage.encryption_key are
+    # injected via environment variables (AUTHELIA_JWT_SECRET,
+    # AUTHELIA_SESSION_SECRET, AUTHELIA_STORAGE_ENCRYPTION_KEY)
+    # sourced from the 1password-authelia secret.
+
+    authentication_backend:
+      file:
+        path: /config/users_database.yml
+        password:
+          algorithm: argon2id
+          iterations: 3
+          parallelism: 4
+          memory: 64
+          key_length: 32
+          salt_length: 16
+
+    session:
+      name: authelia_session
+      domain: colinbruner.com
+      same_site: lax
+      expiration: 3600      # 1 hour
+      inactivity: 300       # 5 minutes
+      remember_me_duration: 1M
+
+    regulation:
+      max_retries: 3
+      find_time: 2m
+      ban_time: 5m
+
+    storage:
+      local:
+        path: /data/db.sqlite3
+
+    notifier:
+      # Writes notifications to a file for PoC; swap for SMTP in production.
+      filesystem:
+        filename: /tmp/notification.txt
+
+    access_control:
+      default_policy: deny
+      rules:
+        # Allow unauthenticated access to the Authelia portal itself.
+        - domain: auth.colinbruner.com
+          policy: bypass
+        # Require single-factor auth for all other subdomains.
+        - domain: "*.colinbruner.com"
+          policy: one_factor
