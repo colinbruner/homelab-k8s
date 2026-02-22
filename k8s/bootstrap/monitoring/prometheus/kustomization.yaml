@@ -3,6 +3,6 @@ kind: Kustomization
 namespace: monitoring
 
 resources:
-  - resources/prometheus-ingress.yaml
+  - resources/prometheus-httproute.yaml
   - resources/prometheus-scrape.yaml
   - resources/prometheus-servicemonitor.yaml

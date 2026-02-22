@@ -5,7 +5,7 @@ namespace: argocd
 
 resources:
   - resources/namespace.yaml
-  - resources/argocd-ingress.yaml
+  - resources/argocd-httproute.yaml
 
 helmCharts:
   - name: argo-cd

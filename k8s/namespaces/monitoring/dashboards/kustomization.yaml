@@ -3,5 +3,4 @@ kind: Kustomization
 
 resources:
   - node.yaml
-  - ingress-nginx.yaml
   - blackbox.yaml

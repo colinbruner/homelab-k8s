@@ -5,4 +5,4 @@ namespace: monitoring
 resources:
   - resources/secret.yaml
   - resources/grafana.yaml
-  - resources/ingress.yaml
+  - resources/httproute.yaml

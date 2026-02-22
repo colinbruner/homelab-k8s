@@ -6,6 +6,6 @@ namespace: monitoring-uptime
 resources:
   - resources/namespace.yaml
   - resources/service.yaml
-  - resources/ingress.yaml
+  - resources/httproute.yaml
   #- resources/pvc.yaml
   - resources/deployment.yaml

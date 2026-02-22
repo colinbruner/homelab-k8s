@@ -1,8 +1,28 @@
+---
 apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
 metadata:
-  name: default-lb-pool
+  name: internal-lb-pool
   namespace: metallb-system
 spec:
   addresses:
-  - 192.168.10.240-192.168.10.254
+    - 192.168.10.240-192.168.10.242
+
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: external-lb-pool
+  namespace: metallb-system
+spec:
+  addresses:
+    - 192.168.10.243-192.168.10.245
+  autoAssign: false
+  serviceAllocation:
+    priority: 10
+    namespaceSelectors:
+      - matchLabels:
+          metallb.io/external-lb: "true"
+    serviceSelectors:
+      - matchLabels:
+          metallb.io/external-lb: "true"

@@ -1,7 +1,0 @@
----
-controller:
-  metrics:
-    enabled: true
-    service:
-      labels: 
-        prometheus-scrape: "true"
