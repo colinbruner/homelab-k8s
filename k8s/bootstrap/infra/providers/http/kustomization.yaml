@@ -5,7 +5,6 @@ namespace: crossplane-system
 
 resources:
   # Install Providers & Secrets
-  - resources/providers.yaml 
-  - resources/secrets.yaml 
-  # DNS
-  - resources/cloudflare # NOTE: generated via generate.sh
+  - resources/providers.yaml
+  - resources/secrets.yaml
+  # DNS records are managed by ArgoCD via k8s/namespaces/crossplane-system/

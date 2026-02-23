@@ -7,10 +7,10 @@ NAMESPACE="crossplane-system"
 
 function install_http_provider() {
     pushd $SCRIPTPATH/http >/dev/null
-    ./generate.sh
     kustomize build . | kubectl apply -f -
     popd >/dev/null
 
+    # DNS records are managed by ArgoCD via k8s/namespaces/crossplane-system/
 }
 
 # base providers

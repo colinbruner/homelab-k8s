@@ -1,8 +1,9 @@
 ---
 
-provider: 
-  http: 
+provider:
+  http:
     dns_records:
-    - name: "whatever"        # subdomain
-      content: "x.x.x.x"      # IP Address
-      comment: "some comment" # arbitrary comment
+    - name: "whatever"         # subdomain
+      content:                 # one or more IP addresses (creates one A record per IP)
+        - "x.x.x.x"
+      comment: "some comment"  # arbitrary comment

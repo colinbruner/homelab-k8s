@@ -3,15 +3,51 @@
 provider:
   http:
     dns_records:
-      - name: "sftp"
-        content: "192.168.10.241"
-        comment: "SFTP Access for Scans"
-      - name: "backups"
-        content: "192.168.10.240"
-        comment: "Koptia Backups UI"
+      # -- Gateway-exposed services (shared-gateway @ 192.168.10.240/241/242) --
+      - name: "argocd"
+        content:
+          - "192.168.10.240"
+          - "192.168.10.241"
+          - "192.168.10.242"
+        comment: "Internal ArgoCD UI (multi-IP)"
+      - name: "argowf"
+        content:
+          - "192.168.10.240"
+          - "192.168.10.241"
+          - "192.168.10.242"
+        comment: "Internal Argo Workflows UI (multi-IP)"
+      - name: "grafana"
+        content:
+          - "192.168.10.240"
+          - "192.168.10.241"
+          - "192.168.10.242"
+        comment: "Internal Grafana UI (multi-IP)"
+      - name: "prometheus"
+        content:
+          - "192.168.10.240"
+          - "192.168.10.241"
+          - "192.168.10.242"
+        comment: "Internal Prometheus UI (multi-IP)"
       - name: "uptime"
-        content: "192.168.10.240"
-        comment: "Kuma Uptime UI"
+        content:
+          - "192.168.10.240"
+          - "192.168.10.241"
+          - "192.168.10.242"
+        comment: "Kuma Uptime UI (multi-IP)"
       - name: "n8n"
-        content: "192.168.10.240"
-        comment: "n8n Workflow Automation UI"
+        content:
+          - "192.168.10.240"
+          - "192.168.10.241"
+          - "192.168.10.242"
+        comment: "n8n Workflow Automation UI (multi-IP)"
+      - name: "backups"
+        content:
+          - "192.168.10.240"
+          - "192.168.10.241"
+          - "192.168.10.242"
+        comment: "Kopia Backups UI (multi-IP)"
+      # -- Direct LoadBalancer services --
+      - name: "sftp"
+        content:
+          - "192.168.10.241"
+        comment: "SFTP Access for Scans"

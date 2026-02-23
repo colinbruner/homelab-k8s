@@ -1,9 +1,11 @@
 {{- range .Values.provider.http.dns_records }}
+{{- $record := . }}
+{{- range .content }}
 ---
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-{{ .name }}
+  name: cloudflare-dns-{{ $record.name }}-{{ . | replace "." "-" }}
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -14,43 +16,43 @@ spec:
       Authorization:
         - ("Bearer {{ printf "{{ cloudflare:crossplane-system:token }}" }}")
     payload:
-      baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records 
+      baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "{{ .name }}",
-          "content": "{{ .content }}",
-          "comment": "{{ .comment }}",
+          "name": "{{ $record.name }}",
+          "content": "{{ . }}",
+          "comment": "{{ $record.comment }}",
           "ttl": 0,
           "type": "A"
         }
     mappings:
-      - action: CREATE 
-        method: "POST" 
+      - action: CREATE
+        method: "POST"
         body: |
           {
-            comment: .payload.body.comment, 
-            content: .payload.body.content, 
+            comment: .payload.body.comment,
+            content: .payload.body.content,
             name: .payload.body.name,
             ttl: .payload.body.ttl,
             type: .payload.body.type
           }
         url: .payload.baseUrl
-      - action: OBSERVE 
+      - action: OBSERVE
         method: "GET"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
       - action: UPDATE
         method: "PATCH"
         body: |
           {
-            comment: .payload.body.comment, 
-            content: .payload.body.content, 
+            comment: .payload.body.comment,
+            content: .payload.body.content,
             name: .payload.body.name,
             ttl: .payload.body.ttl,
             type: .payload.body.type
           }
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
-      - action: REMOVE 
+      - action: REMOVE
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
-
+{{- end }}
 {{- end }}

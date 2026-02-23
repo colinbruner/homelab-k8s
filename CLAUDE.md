@@ -66,7 +66,7 @@ Located in `k8s/namespaces/`, one directory per Kubernetes namespace:
 - **`argocd/`** — ArgoCD user configurations, RBAC, ApplicationSet, HTTPRoute
 - **`backup-documents/`** — Kopia backup for UNAS documents (overlay of `bases/kopia`)
 - **`backup-photos/`** — Kopia backup for UNAS photos (overlay of `bases/kopia`)
-- **`crossplane-system/`** — Cloudflare DNS record CRDs
+- **`crossplane-system/`** — Cloudflare DNS A records (all records, managed via Helm template + generate.sh)
 - **`csi-nfs/`** — CSI-NFS driver and PVs for NFS shares
 - **`gateway-system/`** — Shared Gateway, TLS Certificates, HTTP-to-HTTPS redirect
 - **`monitoring/`** — Grafana CR, secrets, dashboards, datasources, HTTPRoutes for Grafana and Prometheus
@@ -114,6 +114,21 @@ To expose `foo.colinbruner.com` in namespace `foo`:
 3. **Kustomization** — add cert to `k8s/namespaces/gateway-system/kustomization.yaml`
 4. **HTTPRoute** — add `httproute.yaml` to `k8s/namespaces/foo/`
 5. **Push to git** — ArgoCD syncs everything automatically
+
+### DNS Management (Cloudflare)
+
+All Cloudflare DNS A records are defined in `k8s/namespaces/crossplane-system/values.yaml` and
+managed by ArgoCD via Crossplane HTTP provider `Request` CRDs. The `content` field is a list,
+enabling multiple A records per hostname for DNS round-robin across IP pool addresses.
+
+To add or change a DNS record:
+1. Edit `k8s/namespaces/crossplane-system/values.yaml`
+2. Run `bash k8s/namespaces/crossplane-system/generate.sh`
+3. Commit and push — ArgoCD syncs the change
+
+IP pool: `192.168.10.240–243` (MetalLB). Currently:
+- `.240` — Shared Envoy Gateway (all HTTPS services)
+- `.241` — SFTP direct LoadBalancer
 
 ### NFS Storage Layout (UNAS)
 - `unas-docs-ro` — Read-only documents
