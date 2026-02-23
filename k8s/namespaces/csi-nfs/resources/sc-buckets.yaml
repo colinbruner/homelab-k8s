@@ -1,0 +1,14 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: nfs-csi-buckets
+provisioner: nfs.csi.k8s.io
+parameters:
+  server: 192.168.10.5
+  share: /var/nfs/shared/buckets
+  subDir: ${pvc.metadata.namespace}/${pvc.metadata.name}
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+mountOptions:
+  - vers=3
+  - nolock

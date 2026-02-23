@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: garage-config
+  namespace: garage
+data:
+  garage.toml: |
+    metadata_dir = "/var/lib/garage/meta"
+    data_dir = "/var/lib/garage/data"
+
+    replication_mode = "none"
+
+    rpc_bind_addr = "[::]:3901"
+
+    [s3_api]
+    s3_region = "homelab"
+    api_bind_addr = "[::]:3900"
+    root_domain = ".s3.garage.local"
+
+    [s3_web]
+    bind_addr = "[::]:3902"
+    root_domain = ".web.garage.local"
+    index = "index.html"
+    error_document = "404.html"
+
+    [admin]
+    api_bind_addr = "[::]:3903"

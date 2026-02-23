@@ -6,6 +6,7 @@ resources:
   - resources/namespace.yaml
   - resources/pv-documents.yaml
   - resources/pv-scans.yaml
+  - resources/sc-buckets.yaml
 
 helmCharts:
   - name: csi-driver-nfs
