@@ -28,6 +28,8 @@ spec:
         name: uptime-tls
       - kind: Secret
         name: n8n-tls
+      - kind: Secret
+        name: authentik-tls
     allowedRoutes:
       namespaces:
         from: All
