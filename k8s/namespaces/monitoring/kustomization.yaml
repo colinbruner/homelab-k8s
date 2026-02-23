@@ -3,5 +3,9 @@ kind: Kustomization
 namespace: monitoring
 
 resources:
+  - resources/onepassword-secret.yaml
+  - resources/grafana.yaml
+  - resources/grafana-httproute.yaml
+  - resources/prometheus-httproute.yaml
   - dashboards
   - datasources

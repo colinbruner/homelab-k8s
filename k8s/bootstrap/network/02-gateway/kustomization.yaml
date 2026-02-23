@@ -5,10 +5,3 @@ namespace: gateway-system
 resources:
   - resources/namespace.yaml
   - resources/gatewayclass.yaml
-  - resources/gateway.yaml
-  - resources/http-redirect.yaml
-  - resources/certificates/argocd.yaml
-  - resources/certificates/grafana.yaml
-  - resources/certificates/prometheus.yaml
-  - resources/certificates/uptime.yaml
-  - resources/certificates/n8n.yaml

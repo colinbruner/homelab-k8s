@@ -7,8 +7,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Homelab Kubernetes configuration repo. The cluster runs Talos Linux (PXE-provisioned via Ansible), managed with a GitOps approach using ArgoCD.
 
 Four major layers:
-- **`k8s/bootstrap/`** — One-time cluster-wide setup (secrets, networking, infrastructure, CI/CD, monitoring). Run via `bootstrap.sh`.
-- **`k8s/namespaces/`** — ArgoCD-managed apps, one directory per Kubernetes namespace.
+- **`k8s/bootstrap/`** — One-time cluster-wide setup: installs operators, CRDs, and Helm charts only. Run via `bootstrap.sh`. No application-level resources (routes, certs, CRs) belong here.
+- **`k8s/namespaces/`** — ArgoCD-managed apps and configuration, one directory per Kubernetes namespace. All day-2 operational changes go here.
 - **`k8s/bases/`** — Shared Kustomize bases referenced by namespace overlays.
 - **`k8s/cluster/`** — Cluster-scoped resources (PersistentVolumes).
 
@@ -19,6 +19,7 @@ Scripts expect these in `PATH`: `kubectl`, `kustomize`, `kfilt`, `yq`, `helm`, `
 ## General Rules
 
 - Always use `trash` instead of `rm` when deleting files or directories.
+- **Bootstrap installs operators/controllers only.** All application-level resources (HTTPRoutes, Certificates, Grafana CRs, etc.) belong in `k8s/namespaces/` where ArgoCD manages them.
 
 ## Common Commands
 
@@ -55,20 +56,23 @@ docker build -f build/<name>/Containerfile -t <image> build/<name>/
 
 ### Bootstrap Components (installed once, in order)
 1. **Secrets**: `1password` operator + `external-secrets`
-2. **Networking**: `metallb` → `ingress-nginx` → `cert-manager`
+2. **Networking**: `metallb` → `envoy-gateway` (Helm + GatewayClass) → `cert-manager`
 3. **Infrastructure**: `crossplane` (with HTTP provider for Cloudflare DNS)
-4. **CI/CD**: `argocd` → `argowf` (Argo Workflows)
-5. **Monitoring**: `prometheus-operator` + `grafana-operator`
+4. **CI/CD**: `argocd` (Helm chart + namespace only)
+5. **Monitoring**: `prometheus-operator` + `grafana-operator` (Helm only)
 
 ### Namespaces (ArgoCD-managed)
 Located in `k8s/namespaces/`, one directory per Kubernetes namespace:
-- **`argocd/`** — ArgoCD user configurations
+- **`argocd/`** — ArgoCD user configurations, RBAC, ApplicationSet, HTTPRoute
 - **`backup-documents/`** — Kopia backup for UNAS documents (overlay of `bases/kopia`)
 - **`backup-photos/`** — Kopia backup for UNAS photos (overlay of `bases/kopia`)
 - **`crossplane-system/`** — Cloudflare DNS record CRDs
 - **`csi-nfs/`** — CSI-NFS driver and PVs for NFS shares
-- **`monitoring/`** — Grafana dashboards and datasources
+- **`gateway-system/`** — Shared Gateway, TLS Certificates, HTTP-to-HTTPS redirect
+- **`monitoring/`** — Grafana CR, secrets, dashboards, datasources, HTTPRoutes for Grafana and Prometheus
 - **`monitoring-uptime/`** — Kuma uptime monitoring
+- **`n8n/`** — n8n workflow automation
+- **`ollama/`** — Ollama LLM deployment
 - **`sftp/`** — SFTP server deployment
 
 ### Shared Bases
@@ -92,6 +96,24 @@ Helm charts are integrated via the `helmCharts` field in `kustomization.yaml` ra
 **Secret injection** uses the 1Password operator — `OnePasswordItem` CRDs pull secrets from the 1Password vault into native K8s Secrets. No secrets are stored in the repo.
 
 **`install.sh` idempotency pattern**: each bootstrap script checks if its target namespace already exists before applying anything. Safe to re-run.
+
+### Gateway API / Ingress
+
+The cluster uses **Envoy Gateway** with the Kubernetes Gateway API. A single shared `Gateway` resource in `gateway-system` terminates TLS for all domains via per-domain `Certificate` CRDs (cert-manager).
+
+- **Gateway + Certificates**: `k8s/namespaces/gateway-system/` (ArgoCD-managed)
+- **HTTPRoutes**: live in each service's namespace directory (e.g., `k8s/namespaces/argocd/resources/argocd-httproute.yaml`)
+- **HTTP-to-HTTPS redirect**: global `HTTPRoute` in `gateway-system`
+
+### Exposing a New Service
+
+To expose `foo.colinbruner.com` in namespace `foo`:
+
+1. **Certificate** — add `k8s/namespaces/gateway-system/resources/certificates/foo.yaml`
+2. **Gateway listener** — add `certificateRef` to `k8s/namespaces/gateway-system/resources/gateway.yaml`
+3. **Kustomization** — add cert to `k8s/namespaces/gateway-system/kustomization.yaml`
+4. **HTTPRoute** — add `httproute.yaml` to `k8s/namespaces/foo/`
+5. **Push to git** — ArgoCD syncs everything automatically
 
 ### NFS Storage Layout (UNAS)
 - `unas-docs-ro` — Read-only documents

@@ -6,4 +6,5 @@ namespace: argocd
 resources:
   - resources/argocd-users.yaml
   - resources/argocd-rbac.yaml
+  - resources/argocd-httproute.yaml
   - resources/applicationset.yaml

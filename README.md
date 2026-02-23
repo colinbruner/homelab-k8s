@@ -2,19 +2,15 @@
 
 The following files are used to deploy resources onto my homelab kubernetes cluster. Mostly used as a lab for experimenting with new/interesting technology.
 
-I'm trying to work out the directory structure a bit, so this is all likely to change frequently as I develop a framework.
-
 # Design
 
 The goal of this is to, given a configured kubernetes cluster, bootstrap all cluster wide applications through a simple bootstrap.sh script.
 
+**Key principle:** Bootstrap installs operators, CRDs, and Helm charts only. All application-level resources (routes, certificates, CRs) live in `k8s/namespaces/` and are managed by ArgoCD.
+
 # Structure
 
 Each of the following sub-sections is intended to represent a directory at the root of this repository.
-
-## Automation
-
-This contains code for automating my homelab kubernetes cluster. This is the first step of merging code in my private repo to live alongside this code.
 
 ## Build
 
@@ -24,28 +20,28 @@ For more information about the container images in `build`, view [build/README.m
 
 ## K8s
 
-There are two major components [bootstrap](./k8s/bootstrap) and [apps](./k8s/apps).
+There are two major components: [bootstrap](./k8s/bootstrap) and [namespaces](./k8s/namespaces).
 
-- bootstrap: these are the cluster level components required for operation and management. Run once.
-- apps: this is essentially everything else. Base components support these. Managed through ArgoCD.
+- **bootstrap**: cluster-level operators and controllers required for operation. Run once via `bootstrap.sh`. Installs Helm charts, CRDs, and operator deployments only.
+- **namespaces**: everything else. Application configs, routes, certificates, dashboards — all managed through ArgoCD via a Git directory generator ApplicationSet.
 
-> NOTE: Components in bootstrap are intended to be run once. Everything else, including additional manifests building upon bootstrapped components should live within apps and be managed by ArgoCD.
+> NOTE: Components in bootstrap are intended to be run once. Everything else, including additional manifests building upon bootstrapped components, should live within `k8s/namespaces/` and be managed by ArgoCD.
 
 ![Homelab Dependencies](./docs/assets/dependencies.png)
 
 ### Bootstrapping
 
-Running [boopstrap.sh](./k8s/bootstrap/boostrap.sh) will simply recursively execute any `install.sh` executable scripts found within all child directories.
+Running [bootstrap.sh](./k8s/bootstrap/bootstrap.sh) will execute `install.sh` scripts in order across all bootstrap component directories.
 
-These scripts are intended to be idemponent and only make changes when their target namespace, or a custom written condition, does NOT exist.
+These scripts are intended to be idempotent and only make changes when their target namespace, or a custom written condition, does NOT exist.
 
 ```bash
 # Expects the following:
 # - Kube context @ desired cluster to bootstrap with appropriate access
-# - kubectl, kustomize, kfilt, yq, installed and within PATH.
+# - kubectl, kustomize, kfilt, yq, helm, jsonnet, jb installed and within PATH.
 ./bootstrap.sh
 ```
 
-### Apps
+### Namespaces (ArgoCD-managed)
 
-These are applications intended to installed after bootstrap and managed through ArgoCD.
+After bootstrap, ArgoCD discovers and syncs all directories under `k8s/namespaces/` automatically. To add a new application, create a directory with a `kustomization.yaml` under `k8s/namespaces/<name>/` and push to `main`.

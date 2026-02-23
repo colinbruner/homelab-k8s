@@ -1,11 +1,13 @@
 # Prometheus
 
 Prometheus is deployed in two parts:
-1. [install.sh](./install.sh) to install Prometheus CRDs and supporting components.
-2. Kustomize via kustomization.yaml to install my custom defined resources.
+1. `install.sh` to install Prometheus CRDs, operator, and core components from Jsonnet.
+2. `kustomization.yaml` to install custom resources (ScrapeConfig, ServiceMonitor).
+
+The Prometheus HTTPRoute and other application-level config are managed by ArgoCD via `k8s/namespaces/monitoring/`.
 
 # Building
-The following documents how to build the Prometheus manifests, the install.sh script builds these but will not saw prerequisites.
+The following documents how to build the Prometheus manifests, the install.sh script builds these but will not show prerequisites.
 
 ## Prerequisites
 

@@ -1,7 +1,14 @@
 # ArgoCD
 
-ArgoCD is bootstrapped via `k8s/bootstrap/argocd/` and self-manages its own configuration
-from this directory once running.
+ArgoCD is bootstrapped via `k8s/bootstrap/argocd/` (Helm chart + namespace only) and
+self-manages its own configuration from this directory once running.
+
+## Resources
+
+- **User accounts** — `resources/argocd-users.yaml`
+- **RBAC policies** — `resources/argocd-rbac.yaml`
+- **HTTPRoute** — `resources/argocd-httproute.yaml` (routes `argocd.colinbruner.com` via the shared Gateway)
+- **ApplicationSet** — `resources/applicationset.yaml`
 
 ## ApplicationSet
 
