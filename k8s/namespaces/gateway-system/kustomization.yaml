@@ -10,3 +10,4 @@ resources:
   - resources/certificates/prometheus.yaml
   - resources/certificates/uptime.yaml
   - resources/certificates/n8n.yaml
+  - resources/certificates/authentik.yaml

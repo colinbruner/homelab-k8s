@@ -67,7 +67,7 @@ server:
     limits:
       cpu: 1000m
       memory: 1Gi
-  # Ingress managed externally in ingress.yaml
+  # HTTPRoute managed externally in httproute.yaml
   ingress:
     enabled: false
   metrics:
