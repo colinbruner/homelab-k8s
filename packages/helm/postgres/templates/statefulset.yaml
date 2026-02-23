@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+spec:
+  serviceName: {{ .Values.service.name | quote }}
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      securityContext:
+        runAsUser: {{ .Values.securityContext.runAsUser }}
+        runAsGroup: {{ .Values.securityContext.runAsGroup }}
+        fsGroup: {{ .Values.securityContext.fsGroup }}
+      containers:
+      - name: postgres
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- if .Values.pgHba.enabled }}
+        args:
+        - "-c"
+        - "hba_file=/etc/postgresql/pg_hba.conf"
+        {{- end }}
+        ports:
+        - name: postgres
+          containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          value: {{ .Values.database | quote }}
+        - name: POSTGRES_USER
+          {{- if .Values.secret.usernameKey }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.secret.name | quote }}
+              key: {{ .Values.secret.usernameKey | quote }}
+          {{- else }}
+          value: {{ .Values.user | quote }}
+          {{- end }}
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.secret.name | quote }}
+              key: {{ .Values.secret.passwordKey | quote }}
+        - name: PGDATA
+          value: {{ .Values.pgdata | quote }}
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/postgresql/data
+        {{- if .Values.pgHba.enabled }}
+        - name: pg-hba-config
+          mountPath: /etc/postgresql/pg_hba.conf
+          subPath: pg_hba.conf
+        {{- end }}
+        readinessProbe:
+          exec:
+            command: ["pg_isready", "-U", {{ .Values.user | quote }}, "-d", {{ .Values.database | quote }}]
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        livenessProbe:
+          exec:
+            command: ["pg_isready", "-U", {{ .Values.user | quote }}, "-d", {{ .Values.database | quote }}]
+          initialDelaySeconds: 30
+          periodSeconds: 10
+      volumes:
+      {{- if .Values.pgHba.enabled }}
+      - name: pg-hba-config
+        configMap:
+          name: postgres-hba-config
+      {{- end }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: {{ .Values.storage.storageClassName | quote }}
+      resources:
+        requests:
+          storage: {{ .Values.storage.size | quote }}

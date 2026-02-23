@@ -1,11 +1,21 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
+namespace: n8n
 
 resources:
   - n8n-1password.yaml
+  - postgres-1password.yaml
   - n8n-pvc.yaml
   - deploy.yaml
   - service.yaml
   - httproute.yaml
-  - postgres/
+
+helmGlobals:
+  chartHome: ../../../packages/helm
+
+helmCharts:
+  - name: postgres
+    releaseName: postgres
+    namespace: n8n
+    valuesFile: postgres-values.yaml

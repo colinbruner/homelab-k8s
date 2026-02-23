@@ -1,0 +1,27 @@
+database: n8n
+user: n8n_user
+
+secret:
+  name: 1password-postgres
+  usernameKey: username
+  passwordKey: password
+
+storage:
+  size: 20Gi
+
+service:
+  name: postgres-service
+
+# NFS-compatible UIDs — values that resolved permission issues on this cluster.
+securityContext:
+  runAsUser: 977
+  runAsGroup: 988
+  fsGroup: 988
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    cpu: 1000m
+    memory: 2Gi

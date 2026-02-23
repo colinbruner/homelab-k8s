@@ -8,12 +8,18 @@ resources:
   - authentik-1password.yaml
   - postgres-1password.yaml
   - social-1password.yaml
-  - postgres.yaml
   - redis.yaml
   - httproute.yaml
   - social-login-blueprint.yaml
 
+helmGlobals:
+  chartHome: ../../../packages/helm
+
 helmCharts:
+  - name: postgres
+    releaseName: postgres
+    namespace: authentik
+    valuesFile: postgres-values.yaml
   - name: authentik
     repo: https://charts.goauthentik.io
     version: 2025.12.4

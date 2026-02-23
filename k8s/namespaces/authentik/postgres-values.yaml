@@ -1,0 +1,16 @@
+database: authentik
+user: authentik
+
+secret:
+  name: 1password-postgres
+  passwordKey: password
+
+storage:
+  size: 8Gi
+
+# Proven NFS-compatible UIDs for this cluster's NFS setup.
+# See packages/helm/postgres/values.yaml for background.
+securityContext:
+  runAsUser: 977
+  runAsGroup: 988
+  fsGroup: 988

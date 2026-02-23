@@ -1,0 +1,65 @@
+image:
+  repository: postgres
+  # Use '17' (Debian), '17-alpine', or a pinned digest.
+  tag: "17"
+  pullPolicy: IfNotPresent
+
+# Database and user created on first init via POSTGRES_DB / POSTGRES_USER.
+database: myapp
+user: myapp
+
+# Reference to an existing Secret containing credentials.
+# The Secret must exist before this chart deploys (e.g. a OnePasswordItem).
+secret:
+  name: ""           # required
+  passwordKey: password
+  # usernameKey: ""  # when set, POSTGRES_USER is sourced from the secret
+  #                  # instead of .Values.user (useful when the secret holds
+  #                  # a 'username' field set by the 1Password operator).
+
+# PGDATA is set to a subdirectory of the mount path.
+# This avoids the NFS mount-point ownership problem where the root of the
+# mount is owned by root and postgres cannot chown it.
+pgdata: /var/lib/postgresql/data/pgdata
+
+# NFS-compatible securityContext.
+# fsGroup: Kubernetes chowns the mounted PVC to this GID before container
+#   start, so the postgres process can write to the volume regardless of the
+#   underlying NFS server's uid/gid mapping.
+# Proven working values for this cluster's NFS setup: runAsUser=977,
+#   runAsGroup=988, fsGroup=988 (matches n8n/postgres).
+# For postgres:17-bookworm the native postgres uid/gid is 999; override if
+# 999 works on your NFS server.
+securityContext:
+  runAsUser: 999
+  runAsGroup: 999
+  fsGroup: 999
+
+storage:
+  size: 8Gi
+  storageClassName: nfs-csi
+
+service:
+  # Name of the ClusterIP Service and the StatefulSet's serviceName.
+  name: postgres
+  port: 5432
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# pg_hba.conf host-based authentication rules.
+# When enabled, a ConfigMap is mounted and postgres is started with
+# -c hba_file=/etc/postgresql/pg_hba.conf.
+pgHba:
+  enabled: true
+  rules: |
+    # TYPE  DATABASE  USER  ADDRESS        METHOD
+    local   all       all                  trust
+    host    all       all   127.0.0.1/32   scram-sha-256
+    host    all       all   ::1/128        scram-sha-256
+    host    all       all   0.0.0.0/0      scram-sha-256

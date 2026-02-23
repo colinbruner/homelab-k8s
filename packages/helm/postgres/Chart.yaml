@@ -1,0 +1,11 @@
+apiVersion: v2
+name: postgres
+description: >
+  Single-instance PostgreSQL StatefulSet for the homelab cluster.
+  NFS-compatible: uses a configurable securityContext (fsGroup) so the
+  mounted volume is chowned to the postgres process GID before startup,
+  and stores data in a PGDATA subdirectory to avoid mount-point ownership
+  conflicts.
+type: application
+version: 0.1.0
+appVersion: "17"

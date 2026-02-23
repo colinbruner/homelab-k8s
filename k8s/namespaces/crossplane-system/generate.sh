@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # absolute path to the helm chart
-HELM_CHART=$(git rev-parse --show-toplevel)/k8s/packages/helm/cloudflare
+HELM_CHART=$(git rev-parse --show-toplevel)/packages/helm/cloudflare
 TEMP_DIR="temp_outputs"
 function generate_resources() {
   mkdir -p {resources/cloudflare/,$TEMP_DIR}
