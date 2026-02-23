@@ -52,6 +52,13 @@ resources:
     cpu: 500m
     memory: 512Mi
 
+# Idempotent database creation hook.
+# Runs a postStart lifecycle command that waits for postgres to accept
+# connections, then creates .Values.database if it does not already exist.
+# Safe to leave enabled — it's a no-op when the database already exists.
+createDb:
+  enabled: true
+
 # pg_hba.conf host-based authentication rules.
 # When enabled, a ConfigMap is mounted and postgres is started with
 # -c hba_file=/etc/postgresql/pg_hba.conf.

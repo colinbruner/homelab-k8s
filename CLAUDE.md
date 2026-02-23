@@ -6,11 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Homelab Kubernetes configuration repo. The cluster runs Talos Linux (PXE-provisioned via Ansible), managed with a GitOps approach using ArgoCD.
 
-Four major layers:
+Five major layers:
 - **`k8s/bootstrap/`** — One-time cluster-wide setup: installs operators, CRDs, and Helm charts only. Run via `bootstrap.sh`. No application-level resources (routes, certs, CRs) belong here.
 - **`k8s/namespaces/`** — ArgoCD-managed apps and configuration, one directory per Kubernetes namespace. All day-2 operational changes go here.
 - **`k8s/bases/`** — Shared Kustomize bases referenced by namespace overlays.
 - **`k8s/cluster/`** — Cluster-scoped resources (PersistentVolumes).
+- **`packages/`** — Reusable local Helm charts consumed by namespace kustomizations via `helmGlobals.chartHome`.
 
 ## Required Tooling
 
@@ -71,6 +72,7 @@ Located in `k8s/namespaces/`, one directory per Kubernetes namespace:
 - **`gateway-system/`** — Shared Gateway, TLS Certificates, HTTP-to-HTTPS redirect
 - **`monitoring/`** — Grafana CR, secrets, dashboards, datasources, HTTPRoutes for Grafana and Prometheus
 - **`monitoring-uptime/`** — Kuma uptime monitoring
+- **`authentik/`** — Authentik Identity Provider (SSO/OIDC)
 - **`n8n/`** — n8n workflow automation
 - **`ollama/`** — Ollama LLM deployment
 - **`sftp/`** — SFTP server deployment
@@ -78,6 +80,25 @@ Located in `k8s/namespaces/`, one directory per Kubernetes namespace:
 ### Shared Bases
 Located in `k8s/bases/`:
 - **`kopia/`** — Shared Kustomize base for Kopia backup overlays
+
+### Local Helm Charts
+Located in `packages/helm/`, one subdirectory per chart. Consumed by namespace
+`kustomization.yaml` files via:
+```yaml
+helmGlobals:
+  chartHome: ../../../packages/helm   # relative path to packages/helm/ from k8s/namespaces/<ns>/
+
+helmCharts:
+  - name: postgres    # matches packages/helm/postgres/
+    releaseName: postgres
+    namespace: <ns>
+    valuesFile: postgres-values.yaml
+```
+
+Available charts:
+- **`postgres/`** — Single-instance PostgreSQL StatefulSet, NFS-compatible (configurable
+  `securityContext`/`fsGroup`, `PGDATA` subdirectory, pg_hba.conf). Used by `authentik` and `n8n`.
+- **`cloudflare/`** — Crossplane HTTP provider `Request` resources for Cloudflare DNS A records.
 
 ### Cluster-Scoped Resources
 Located in `k8s/cluster/`:
@@ -91,7 +112,7 @@ k8s/bases/<base>/         # Shared core manifests
 k8s/namespaces/<ns>/      # Namespace-specific overlays referencing bases
 ```
 
-Helm charts are integrated via the `helmCharts` field in `kustomization.yaml` rather than standalone Helm releases.
+Helm charts are integrated via the `helmCharts` field in `kustomization.yaml` rather than standalone Helm releases. Remote charts specify a `repo` URL; local charts omit `repo` and are resolved from `helmGlobals.chartHome` (pointing to `packages/helm/`).
 
 **Secret injection** uses the 1Password operator — `OnePasswordItem` CRDs pull secrets from the 1Password vault into native K8s Secrets. No secrets are stored in the repo.
 

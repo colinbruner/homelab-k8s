@@ -48,6 +48,21 @@ spec:
               key: {{ .Values.secret.passwordKey | quote }}
         - name: PGDATA
           value: {{ .Values.pgdata | quote }}
+        {{- if .Values.createDb.enabled }}
+        lifecycle:
+          postStart:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - |
+                until pg_isready -U "$POSTGRES_USER" -d template1; do sleep 1; done
+                psql -U "$POSTGRES_USER" -d template1 \
+                  -tc "SELECT 1 FROM pg_database WHERE datname = '$POSTGRES_DB'" \
+                  | grep -q 1 \
+                  || psql -U "$POSTGRES_USER" -d template1 \
+                     -c "CREATE DATABASE \"$POSTGRES_DB\" OWNER \"$POSTGRES_USER\";"
+        {{- end }}
         resources:
           {{- toYaml .Values.resources | nindent 10 }}
         volumeMounts:
