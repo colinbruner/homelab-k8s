@@ -30,6 +30,16 @@ global:
         secretKeyRef:
           name: 1password-postgres
           key: password
+    - name: GOOGLE_CLIENT_ID
+      valueFrom:
+        secretKeyRef:
+          name: 1password-social
+          key: google_client_id
+    - name: GOOGLE_CLIENT_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: 1password-social
+          key: google_client_secret
 
 authentik:
   # Log level: debug | info | warning | error
