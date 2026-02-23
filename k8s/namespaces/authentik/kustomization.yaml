@@ -8,6 +8,8 @@ resources:
   - authentik-1password.yaml
   - postgres-1password.yaml
   - social-1password.yaml
+  - postgres.yaml
+  - redis.yaml
   - httproute.yaml
   - social-login-blueprint.yaml
 

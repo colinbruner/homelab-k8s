@@ -40,6 +40,8 @@ global:
         secretKeyRef:
           name: 1password-social
           key: google_client_secret
+    - name: AUTHENTIK_REDIS__HOST
+      value: "redis"
 
 authentik:
   # Log level: debug | info | warning | error
@@ -58,8 +60,7 @@ authentik:
   #   from: authentik@colinbruner.com
 
   postgresql:
-    # Connects to the bundled postgres subchart service
-    host: "authentik-postgresql"
+    host: "postgres"
     name: authentik
     user: authentik
     # password sourced from AUTHENTIK_POSTGRESQL__PASSWORD env var above
@@ -91,27 +92,8 @@ worker:
       cpu: 1000m
       memory: 1Gi
 
-# ─── Bundled PostgreSQL (bitnami/postgresql) ───────────────────────────────
+# PostgreSQL and Redis run as standalone workloads (postgres.yaml / redis.yaml).
+# The bundled subcharts are disabled.
 postgresql:
-  enabled: true  # must be explicit — default changed to false in chart 2025.x
-  auth:
-    username: authentik
-    database: authentik
-    # Pulls password from the same 1password-postgres secret used above
-    existingSecret: 1password-postgres
-    secretKeys:
-      adminPasswordKey: password
-      userPasswordKey: password
-  primary:
-    resources:
-      requests:
-        cpu: 100m
-        memory: 256Mi
-      limits:
-        cpu: 500m
-        memory: 512Mi
-    persistence:
-      enabled: true
-      storageClass: nfs-csi
-      size: 8Gi
+  enabled: false
 
