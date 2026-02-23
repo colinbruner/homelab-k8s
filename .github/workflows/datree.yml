@@ -38,7 +38,8 @@ jobs:
         with:
           # Add the path to the configuration file/s that you would like to test.
           # See https://github.com/datreeio/action-datree#usage for all available options.
-          path: test-file.yaml
+          path: '**/*.yaml'
+          cliArguments: '--only-k8s-files'
           # Setting a SARIF output will generate a file named "datree.sarif" containing your test results
           cliArguments: "-o sarif"
       - name: Upload result to GitHub Code Scanning
