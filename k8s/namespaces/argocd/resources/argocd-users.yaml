@@ -10,3 +10,4 @@ data:
   admin.enabled: "false"
   accounts.crossplane: apiKey
   accounts.colin: login, apiKey
+  kustomize.buildOptions: "--enable-helm"
