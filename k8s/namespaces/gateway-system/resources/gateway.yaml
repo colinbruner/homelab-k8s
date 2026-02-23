@@ -30,6 +30,8 @@ spec:
         name: n8n-tls
       - kind: Secret
         name: authentik-tls
+      - kind: Secret
+        name: garage-tls
     allowedRoutes:
       namespaces:
         from: All

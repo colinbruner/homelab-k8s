@@ -52,6 +52,18 @@ provider:
           - "192.168.10.241"
           - "192.168.10.242"
         comment: "Authentik Identity Provider (multi-IP)"
+      - name: "garage"
+        content:
+          - "192.168.10.240"
+          - "192.168.10.241"
+          - "192.168.10.242"
+        comment: "Garage S3 Web (multi-IP)"
+      - name: "garage-admin"
+        content:
+          - "192.168.10.240"
+          - "192.168.10.241"
+          - "192.168.10.242"
+        comment: "Garage Admin API (multi-IP)"
       # -- Direct LoadBalancer services --
       - name: "sftp"
         content:
