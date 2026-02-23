@@ -60,10 +60,10 @@ data:
           slug: google
         attrs:
           name: Google
-          enabled: false   # Set to true after adding credentials
+          enabled: true
           provider_type: google
-          consumer_key: ""       # Replace with Google Client ID
-          consumer_secret: ""    # Replace with Google Client Secret
+          consumer_key: !Env GOOGLE_CLIENT_ID
+          consumer_secret: !Env GOOGLE_CLIENT_SECRET
           # Controls whether new users are created on first social login:
           user_matching_mode: identifier
           authentication_flow: !Find
