@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: cloudflared
+
+resources:
+  - namespace.yaml
+  - resources/1password-tunnel.yaml
+  - resources/configmap.yaml
+  - resources/deployment.yaml

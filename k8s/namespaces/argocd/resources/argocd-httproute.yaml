@@ -10,6 +10,7 @@ spec:
     sectionName: https
   hostnames:
   - argocd.colinbruner.com
+  - argocd-internal.colinbruner.com
   rules:
   - matches:
     - path:

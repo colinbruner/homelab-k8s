@@ -10,6 +10,7 @@ resources:
   - social-1password.yaml
   - redis.yaml
   - httproute.yaml
+  - reference-grant.yaml
   - social-login-blueprint.yaml
 
 helmGlobals:

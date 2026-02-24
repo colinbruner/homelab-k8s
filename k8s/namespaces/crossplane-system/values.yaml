@@ -3,69 +3,71 @@
 provider:
   http:
     dns_records:
-      # -- Gateway-exposed services (shared-gateway @ 192.168.10.240/241/242) --
-      - name: "argocd"
+      # -- Internal LAN access (shared-gateway @ 192.168.10.240/241/242) --
+      # These -internal records point to private MetalLB IPs for direct LAN access.
+      # Public access uses Cloudflare Tunnel (CNAME records managed via dashboard/CLI).
+      - name: "argocd-internal"
         content:
           - "192.168.10.240"
           - "192.168.10.241"
           - "192.168.10.242"
         comment: "Internal ArgoCD UI (multi-IP)"
-      - name: "argowf"
+      - name: "argowf-internal"
         content:
           - "192.168.10.240"
           - "192.168.10.241"
           - "192.168.10.242"
         comment: "Internal Argo Workflows UI (multi-IP)"
-      - name: "grafana"
+      - name: "grafana-internal"
         content:
           - "192.168.10.240"
           - "192.168.10.241"
           - "192.168.10.242"
         comment: "Internal Grafana UI (multi-IP)"
-      - name: "prometheus"
+      - name: "prometheus-internal"
         content:
           - "192.168.10.240"
           - "192.168.10.241"
           - "192.168.10.242"
         comment: "Internal Prometheus UI (multi-IP)"
-      - name: "uptime"
+      - name: "uptime-internal"
         content:
           - "192.168.10.240"
           - "192.168.10.241"
           - "192.168.10.242"
-        comment: "Kuma Uptime UI (multi-IP)"
-      - name: "n8n"
+        comment: "Internal Kuma Uptime UI (multi-IP)"
+      - name: "n8n-internal"
         content:
           - "192.168.10.240"
           - "192.168.10.241"
           - "192.168.10.242"
-        comment: "n8n Workflow Automation UI (multi-IP)"
-      - name: "backups"
+        comment: "Internal n8n Workflow Automation UI (multi-IP)"
+      - name: "backups-internal"
         content:
           - "192.168.10.240"
           - "192.168.10.241"
           - "192.168.10.242"
-        comment: "Kopia Backups UI (multi-IP)"
-      - name: "auth"
+        comment: "Internal Kopia Backups UI (multi-IP)"
+      - name: "auth-internal"
         content:
           - "192.168.10.240"
           - "192.168.10.241"
           - "192.168.10.242"
-        comment: "Authentik Identity Provider (multi-IP)"
-      - name: "garage"
+        comment: "Internal Authentik Identity Provider (multi-IP)"
+      - name: "garage-internal"
         content:
           - "192.168.10.240"
           - "192.168.10.241"
           - "192.168.10.242"
-        comment: "Garage S3 Web (multi-IP)"
-      - name: "garage-admin"
+        comment: "Internal Garage S3 Web (multi-IP)"
+      - name: "garage-admin-internal"
         content:
           - "192.168.10.240"
           - "192.168.10.241"
           - "192.168.10.242"
-        comment: "Garage Admin API (multi-IP)"
+        comment: "Internal Garage Admin API (multi-IP)"
       # -- Direct LoadBalancer services --
-      - name: "sftp"
+      - name: "sftp-internal"
         content:
           - "192.168.10.241"
-        comment: "SFTP Access for Scans"
+        comment: "Internal SFTP Access for Scans"

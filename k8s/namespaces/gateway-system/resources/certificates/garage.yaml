@@ -11,3 +11,5 @@ spec:
   dnsNames:
   - garage.colinbruner.com
   - garage-admin.colinbruner.com
+  - garage-internal.colinbruner.com
+  - garage-admin-internal.colinbruner.com

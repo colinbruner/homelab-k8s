@@ -10,6 +10,7 @@ spec:
     sectionName: https
   hostnames:
   - n8n.colinbruner.com
+  - n8n-internal.colinbruner.com
   rules:
   - matches:
     - path:

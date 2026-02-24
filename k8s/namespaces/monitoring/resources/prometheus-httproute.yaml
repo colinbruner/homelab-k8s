@@ -10,6 +10,7 @@ spec:
     sectionName: https
   hostnames:
   - prometheus.colinbruner.com
+  - prometheus-internal.colinbruner.com
   rules:
   - matches:
     - path:

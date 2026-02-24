@@ -10,6 +10,7 @@ spec:
     sectionName: https
   hostnames:
   - auth.colinbruner.com
+  - auth-internal.colinbruner.com
   rules:
   - matches:
     - path:
