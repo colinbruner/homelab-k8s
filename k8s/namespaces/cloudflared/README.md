@@ -84,12 +84,13 @@ The public CNAME records are managed via Cloudflare (dashboard or CLI).
 
 Create a 1Password item at `vaults/lab/items/cloudflared-tunnel` with:
 
-| Field              | Value                             |
-| ------------------ | --------------------------------- |
-| `credentials.json` | The full JSON content from Step 1 |
+| Field   | Value                                                    |
+| ------- | -------------------------------------------------------- |
+| `token` | The tunnel token from Step 1 (shown after tunnel is run) |
 
-The OnePasswordItem CRD will create a Kubernetes Secret with this data,
-mounted into the cloudflared pods.
+The OnePasswordItem CRD will create a Kubernetes Secret with this data.
+The `token` field is injected as a `TUNNEL_TOKEN` environment variable into
+the cloudflared pods (token-based auth — no credentials file needed).
 
 ### Step 3: Update the Tunnel ID in ConfigMap
 
