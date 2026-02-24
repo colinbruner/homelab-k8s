@@ -1,4 +1,5 @@
 ---
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
@@ -52,6 +53,7 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
@@ -105,6 +107,7 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
@@ -158,6 +161,7 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
@@ -211,6 +215,7 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
@@ -264,6 +269,7 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
@@ -317,6 +323,7 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
@@ -370,6 +377,7 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
@@ -423,6 +431,7 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
@@ -476,6 +485,7 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
@@ -529,6 +539,7 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
@@ -582,6 +593,7 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
@@ -635,165 +647,7 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-apiVersion: http.crossplane.io/v1alpha2
-kind: Request
-metadata:
-  name: cloudflare-dns-uptime-internal-192-168-10-240
-spec:
-  providerConfigRef:
-    name: http-cloudflare
-  forProvider:
-    headers:
-      Content-Type:
-        - application/json
-      Authorization:
-        - ("Bearer {{ cloudflare:crossplane-system:token }}")
-    payload:
-      baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
-      body: |
-        {
-          "name": "uptime-internal",
-          "content": "192.168.10.240",
-          "comment": "Internal Kuma Uptime UI (multi-IP)",
-          "ttl": 0,
-          "type": "A"
-        }
-    mappings:
-      - action: CREATE
-        method: "POST"
-        body: |
-          {
-            comment: .payload.body.comment,
-            content: .payload.body.content,
-            name: .payload.body.name,
-            ttl: .payload.body.ttl,
-            type: .payload.body.type
-          }
-        url: .payload.baseUrl
-      - action: OBSERVE
-        method: "GET"
-        url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
-      - action: UPDATE
-        method: "PATCH"
-        body: |
-          {
-            comment: .payload.body.comment,
-            content: .payload.body.content,
-            name: .payload.body.name,
-            ttl: .payload.body.ttl,
-            type: .payload.body.type
-          }
-        url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
-      - action: REMOVE
-        method: "DELETE"
-        url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
----
-apiVersion: http.crossplane.io/v1alpha2
-kind: Request
-metadata:
-  name: cloudflare-dns-uptime-internal-192-168-10-241
-spec:
-  providerConfigRef:
-    name: http-cloudflare
-  forProvider:
-    headers:
-      Content-Type:
-        - application/json
-      Authorization:
-        - ("Bearer {{ cloudflare:crossplane-system:token }}")
-    payload:
-      baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
-      body: |
-        {
-          "name": "uptime-internal",
-          "content": "192.168.10.241",
-          "comment": "Internal Kuma Uptime UI (multi-IP)",
-          "ttl": 0,
-          "type": "A"
-        }
-    mappings:
-      - action: CREATE
-        method: "POST"
-        body: |
-          {
-            comment: .payload.body.comment,
-            content: .payload.body.content,
-            name: .payload.body.name,
-            ttl: .payload.body.ttl,
-            type: .payload.body.type
-          }
-        url: .payload.baseUrl
-      - action: OBSERVE
-        method: "GET"
-        url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
-      - action: UPDATE
-        method: "PATCH"
-        body: |
-          {
-            comment: .payload.body.comment,
-            content: .payload.body.content,
-            name: .payload.body.name,
-            ttl: .payload.body.ttl,
-            type: .payload.body.type
-          }
-        url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
-      - action: REMOVE
-        method: "DELETE"
-        url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
----
-apiVersion: http.crossplane.io/v1alpha2
-kind: Request
-metadata:
-  name: cloudflare-dns-uptime-internal-192-168-10-242
-spec:
-  providerConfigRef:
-    name: http-cloudflare
-  forProvider:
-    headers:
-      Content-Type:
-        - application/json
-      Authorization:
-        - ("Bearer {{ cloudflare:crossplane-system:token }}")
-    payload:
-      baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
-      body: |
-        {
-          "name": "uptime-internal",
-          "content": "192.168.10.242",
-          "comment": "Internal Kuma Uptime UI (multi-IP)",
-          "ttl": 0,
-          "type": "A"
-        }
-    mappings:
-      - action: CREATE
-        method: "POST"
-        body: |
-          {
-            comment: .payload.body.comment,
-            content: .payload.body.content,
-            name: .payload.body.name,
-            ttl: .payload.body.ttl,
-            type: .payload.body.type
-          }
-        url: .payload.baseUrl
-      - action: OBSERVE
-        method: "GET"
-        url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
-      - action: UPDATE
-        method: "PATCH"
-        body: |
-          {
-            comment: .payload.body.comment,
-            content: .payload.body.content,
-            name: .payload.body.name,
-            ttl: .payload.body.ttl,
-            type: .payload.body.type
-          }
-        url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
-      - action: REMOVE
-        method: "DELETE"
-        url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
----
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
@@ -847,6 +701,7 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
@@ -900,6 +755,7 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
@@ -953,6 +809,7 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
@@ -1006,6 +863,7 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
@@ -1059,6 +917,7 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
@@ -1112,6 +971,7 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
@@ -1165,6 +1025,7 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
@@ -1218,6 +1079,7 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
@@ -1271,6 +1133,7 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
@@ -1324,6 +1187,7 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
@@ -1377,6 +1241,7 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
@@ -1430,6 +1295,7 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
@@ -1483,6 +1349,7 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
@@ -1536,6 +1403,7 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
@@ -1589,6 +1457,7 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
+# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
