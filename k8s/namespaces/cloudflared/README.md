@@ -25,6 +25,7 @@ Envoy Gateway (shared-gateway, port 443)
 ### Traffic Flows
 
 **Public access (via Cloudflare Tunnel):**
+
 ```
 User --> argocd.colinbruner.com
      --> Cloudflare Edge (CNAME to <TUNNEL_ID>.cfargotunnel.com)
@@ -36,6 +37,7 @@ User --> argocd.colinbruner.com
 ```
 
 **Internal/LAN access (direct):**
+
 ```
 User --> argocd-internal.colinbruner.com
      --> DNS A record (192.168.10.240/241/242)
@@ -46,10 +48,10 @@ User --> argocd-internal.colinbruner.com
 
 ## DNS Naming Convention
 
-| Access Path | DNS Pattern | Record Type | Target |
-|---|---|---|---|
-| **Public** (tunnel) | `<name>.colinbruner.com` | CNAME | `<TUNNEL_ID>.cfargotunnel.com` |
-| **Internal** (LAN) | `<name>-internal.colinbruner.com` | A | `192.168.10.240/241/242` |
+| Access Path         | DNS Pattern                       | Record Type | Target                         |
+| ------------------- | --------------------------------- | ----------- | ------------------------------ |
+| **Public** (tunnel) | `<name>.colinbruner.com`          | CNAME       | `<TUNNEL_ID>.cfargotunnel.com` |
+| **Internal** (LAN)  | `<name>-internal.colinbruner.com` | A           | `192.168.10.240/241/242`       |
 
 The `-internal` A records are managed via Crossplane in `k8s/namespaces/crossplane-system/`.
 The public CNAME records are managed via Cloudflare (dashboard or CLI).
@@ -82,8 +84,8 @@ The public CNAME records are managed via Cloudflare (dashboard or CLI).
 
 Create a 1Password item at `vaults/lab/items/cloudflared-tunnel` with:
 
-| Field | Value |
-|---|---|
+| Field              | Value                             |
+| ------------------ | --------------------------------- |
 | `credentials.json` | The full JSON content from Step 1 |
 
 The OnePasswordItem CRD will create a Kubernetes Secret with this data,
@@ -121,15 +123,20 @@ DNS CNAME records are **not** created automatically. Create them using the CLI:
 # Install cloudflared locally if not already installed
 # https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/
 
+# Authenticate cloudflared with your Cloudflare account.
+# This opens a browser and downloads ~/.cloudflared/cert.pem — required
+# for management commands like `tunnel route dns` (separate from the tunnel token).
+cloudflared tunnel login
+
 # Route each public hostname to the tunnel
-cloudflared tunnel route dns homelab-k8s argocd.colinbruner.com
-cloudflared tunnel route dns homelab-k8s grafana.colinbruner.com
-cloudflared tunnel route dns homelab-k8s prometheus.colinbruner.com
-cloudflared tunnel route dns homelab-k8s n8n.colinbruner.com
-cloudflared tunnel route dns homelab-k8s auth.colinbruner.com
-cloudflared tunnel route dns homelab-k8s garage.colinbruner.com
-cloudflared tunnel route dns homelab-k8s garage-admin.colinbruner.com
-cloudflared tunnel route dns homelab-k8s uptime.colinbruner.com
+cloudflared tunnel route dns homelab argocd.colinbruner.com
+cloudflared tunnel route dns homelab grafana.colinbruner.com
+cloudflared tunnel route dns homelab prometheus.colinbruner.com
+cloudflared tunnel route dns homelab n8n.colinbruner.com
+cloudflared tunnel route dns homelab auth.colinbruner.com
+cloudflared tunnel route dns homelab garage.colinbruner.com
+cloudflared tunnel route dns homelab garage-admin.colinbruner.com
+cloudflared tunnel route dns homelab uptime.colinbruner.com
 ```
 
 Each command creates a CNAME record: `<hostname>` -> `<TUNNEL_ID>.cfargotunnel.com`.
@@ -208,14 +215,16 @@ For each service you want to protect:
 To protect a new service with Authentik ext_authz:
 
 1. **Add the namespace to the ReferenceGrant** in `k8s/namespaces/authentik/reference-grant.yaml`:
+
    ```yaml
    from:
-   - group: gateway.envoyproxy.io
-     kind: SecurityPolicy
-     namespace: <new-namespace>
+     - group: gateway.envoyproxy.io
+       kind: SecurityPolicy
+       namespace: <new-namespace>
    ```
 
 2. **Create a SecurityPolicy** in the service's namespace:
+
    ```yaml
    apiVersion: gateway.envoyproxy.io/v1alpha1
    kind: SecurityPolicy
@@ -224,21 +233,21 @@ To protect a new service with Authentik ext_authz:
      namespace: <namespace>
    spec:
      targetRefs:
-     - group: gateway.networking.k8s.io
-       kind: HTTPRoute
-       name: <httproute-name>
+       - group: gateway.networking.k8s.io
+         kind: HTTPRoute
+         name: <httproute-name>
      extAuth:
        http:
          backendRefs:
-         - name: authentik-server
-           namespace: authentik
-           port: 80
+           - name: authentik-server
+             namespace: authentik
+             port: 80
          headersToBackend:
-         - X-authentik-username
-         - X-authentik-groups
-         - X-authentik-email
-         - X-authentik-name
-         - X-authentik-uid
+           - X-authentik-username
+           - X-authentik-groups
+           - X-authentik-email
+           - X-authentik-name
+           - X-authentik-uid
          path: /outpost.goauthentik.io/auth/nginx
    ```
 
@@ -248,20 +257,20 @@ To protect a new service with Authentik ext_authz:
 
 ### Services That Should NOT Have ext_authz
 
-| Service | Reason |
-|---|---|
+| Service                            | Reason                                                     |
+| ---------------------------------- | ---------------------------------------------------------- |
 | `auth.colinbruner.com` (Authentik) | Circular dependency — Authentik cannot authenticate itself |
-| `argocd.colinbruner.com` | Has its own RBAC and authentication system |
+| `argocd.colinbruner.com`           | Has its own RBAC and authentication system                 |
 
 ### Services That Benefit from ext_authz
 
-| Service | Reason |
-|---|---|
-| `prometheus.colinbruner.com` | No built-in authentication (already configured) |
-| `grafana.colinbruner.com` | Has built-in auth, but SSO provides unified login |
-| `n8n.colinbruner.com` | Additional security layer for workflow automation |
-| `garage.colinbruner.com` | Additional security for S3 web interface |
-| `garage-admin.colinbruner.com` | Protects admin API |
+| Service                        | Reason                                            |
+| ------------------------------ | ------------------------------------------------- |
+| `prometheus.colinbruner.com`   | No built-in authentication (already configured)   |
+| `grafana.colinbruner.com`      | Has built-in auth, but SSO provides unified login |
+| `n8n.colinbruner.com`          | Additional security layer for workflow automation |
+| `garage.colinbruner.com`       | Additional security for S3 web interface          |
+| `garage-admin.colinbruner.com` | Protects admin API                                |
 
 ---
 
@@ -333,12 +342,12 @@ This architecture implements multiple security layers:
 For the Cloudflare API token used by cert-manager (DNS-01 challenges) and
 tunnel management, use the minimum required permissions:
 
-| Permission | Scope | Purpose |
-|---|---|---|
-| `Zone:DNS:Edit` | Specific zone (colinbruner.com) | cert-manager DNS-01 challenges |
-| `Zone:Zone:Read` | Specific zone | cert-manager zone lookup |
-| `Account:Cloudflare Tunnel:Edit` | Account | Tunnel management |
-| `Account:Cloudflare Tunnel:Read` | Account | Tunnel status |
+| Permission                       | Scope                           | Purpose                        |
+| -------------------------------- | ------------------------------- | ------------------------------ |
+| `Zone:DNS:Edit`                  | Specific zone (colinbruner.com) | cert-manager DNS-01 challenges |
+| `Zone:Zone:Read`                 | Specific zone                   | cert-manager zone lookup       |
+| `Account:Cloudflare Tunnel:Edit` | Account                         | Tunnel management              |
+| `Account:Cloudflare Tunnel:Read` | Account                         | Tunnel status                  |
 
 Create separate API tokens for different purposes (cert-manager vs tunnel management)
 following the principle of least privilege.
@@ -351,10 +360,11 @@ To expose a new service `foo.colinbruner.com`:
 
 1. **Certificate**: Update `k8s/namespaces/gateway-system/resources/certificates/foo.yaml`
    to include both public and internal SANs:
+
    ```yaml
    dnsNames:
-   - foo.colinbruner.com
-   - foo-internal.colinbruner.com
+     - foo.colinbruner.com
+     - foo-internal.colinbruner.com
    ```
 
 2. **Gateway listener**: Add `certificateRef` to `k8s/namespaces/gateway-system/resources/gateway.yaml`
@@ -362,13 +372,15 @@ To expose a new service `foo.colinbruner.com`:
 3. **Kustomization**: Add cert to `k8s/namespaces/gateway-system/kustomization.yaml`
 
 4. **HTTPRoute**: Add both hostnames to the route:
+
    ```yaml
    hostnames:
-   - foo.colinbruner.com
-   - foo-internal.colinbruner.com
+     - foo.colinbruner.com
+     - foo-internal.colinbruner.com
    ```
 
 5. **Internal DNS**: Add to `k8s/namespaces/crossplane-system/values.yaml`:
+
    ```yaml
    - name: "foo-internal"
      content:
@@ -377,9 +389,11 @@ To expose a new service `foo.colinbruner.com`:
        - "192.168.10.242"
      comment: "Internal Foo UI (multi-IP)"
    ```
+
    Then run: `bash k8s/namespaces/crossplane-system/generate.sh`
 
 6. **Public DNS**: Create CNAME record:
+
    ```bash
    cloudflared tunnel route dns homelab-k8s foo.colinbruner.com
    ```
@@ -393,23 +407,27 @@ To expose a new service `foo.colinbruner.com`:
 ## Troubleshooting
 
 ### Check cloudflared tunnel status
+
 ```bash
 kubectl logs -n cloudflared -l app=cloudflared --tail=50
 kubectl get pods -n cloudflared
 ```
 
 ### Check tunnel metrics
+
 ```bash
 kubectl port-forward -n cloudflared deploy/cloudflared 2000:2000
 curl http://localhost:2000/metrics
 ```
 
 ### Verify Envoy proxy service name
+
 ```bash
 kubectl get svc -n envoy-gateway-system
 ```
 
 ### Test ext_authz flow
+
 ```bash
 # From within the cluster, test the Authentik auth endpoint
 kubectl run -it --rm test --image=curlimages/curl -- \
@@ -417,12 +435,14 @@ kubectl run -it --rm test --image=curlimages/curl -- \
 ```
 
 ### Check SecurityPolicy status
+
 ```bash
 kubectl get securitypolicy -A
 kubectl describe securitypolicy authentik-ext-auth-prometheus -n monitoring
 ```
 
 ### DNS verification
+
 ```bash
 # Verify public CNAME
 dig argocd.colinbruner.com CNAME
@@ -432,6 +452,7 @@ dig argocd-internal.colinbruner.com A
 ```
 
 ### Certificate status
+
 ```bash
 kubectl get certificates -n gateway-system
 kubectl describe certificate argocd-tls -n gateway-system
