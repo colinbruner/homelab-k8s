@@ -135,9 +135,6 @@ cloudflared tunnel route dns homelab grafana.colinbruner.com
 cloudflared tunnel route dns homelab prometheus.colinbruner.com
 cloudflared tunnel route dns homelab n8n.colinbruner.com
 cloudflared tunnel route dns homelab auth.colinbruner.com
-cloudflared tunnel route dns homelab garage.colinbruner.com
-cloudflared tunnel route dns homelab garage-admin.colinbruner.com
-cloudflared tunnel route dns homelab uptime.colinbruner.com
 ```
 
 Each command creates a CNAME record: `<hostname>` -> `<TUNNEL_ID>.cfargotunnel.com`.

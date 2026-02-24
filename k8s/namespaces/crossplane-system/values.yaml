@@ -30,12 +30,6 @@ provider:
           - "192.168.10.241"
           - "192.168.10.242"
         comment: "Internal Prometheus UI (multi-IP)"
-      - name: "uptime-internal"
-        content:
-          - "192.168.10.240"
-          - "192.168.10.241"
-          - "192.168.10.242"
-        comment: "Internal Kuma Uptime UI (multi-IP)"
       - name: "n8n-internal"
         content:
           - "192.168.10.240"
