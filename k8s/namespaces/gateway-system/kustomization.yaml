@@ -3,6 +3,7 @@ kind: Kustomization
 namespace: gateway-system
 
 resources:
+  - resources/envoy-proxy.yaml
   - resources/gateway.yaml
   - resources/http-redirect.yaml
   - resources/certificates/argocd.yaml

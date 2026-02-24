@@ -1,0 +1,18 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: proxy-config
+  namespace: gateway-system
+spec:
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyService:
+        # Override the auto-generated service name (default includes a random hash suffix).
+        # This gives a stable DNS name for cluster-internal consumers like cloudflared:
+        #   https://envoy-proxy.envoy-gateway-system.svc.cluster.local:443
+        name: envoy-proxy
+        annotations:
+          # Pin the MetalLB IP so it survives service recreation.
+          # TODO: unpin this post re-creation.
+          metallb.io/loadBalancerIPs: 192.168.10.242
