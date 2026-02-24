@@ -1,0 +1,25 @@
+---
+# ReferenceGrant allows SecurityPolicy resources in other namespaces to
+# reference the authentik-server Service for ext_authz forward authentication.
+#
+# Add additional 'from' entries as you protect more services with Authentik.
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: allow-ext-auth
+  namespace: authentik
+spec:
+  from:
+  - group: gateway.envoyproxy.io
+    kind: SecurityPolicy
+    namespace: monitoring
+  - group: gateway.envoyproxy.io
+    kind: SecurityPolicy
+    namespace: n8n
+  - group: gateway.envoyproxy.io
+    kind: SecurityPolicy
+    namespace: garage
+  to:
+  - group: ""
+    kind: Service
+    name: authentik-server

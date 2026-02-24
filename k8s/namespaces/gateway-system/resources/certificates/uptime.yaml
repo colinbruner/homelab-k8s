@@ -10,3 +10,4 @@ spec:
     kind: ClusterIssuer
   dnsNames:
   - uptime.colinbruner.com
+  - uptime-internal.colinbruner.com

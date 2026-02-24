@@ -1,9 +1,8 @@
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-argocd-192-168-10-240
+  name: cloudflare-dns-argocd-internal-192-168-10-240
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -17,7 +16,7 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "argocd",
+          "name": "argocd-internal",
           "content": "192.168.10.240",
           "comment": "Internal ArgoCD UI (multi-IP)",
           "ttl": 0,
@@ -53,11 +52,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-argocd-192-168-10-241
+  name: cloudflare-dns-argocd-internal-192-168-10-241
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -71,7 +69,7 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "argocd",
+          "name": "argocd-internal",
           "content": "192.168.10.241",
           "comment": "Internal ArgoCD UI (multi-IP)",
           "ttl": 0,
@@ -107,11 +105,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-argocd-192-168-10-242
+  name: cloudflare-dns-argocd-internal-192-168-10-242
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -125,7 +122,7 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "argocd",
+          "name": "argocd-internal",
           "content": "192.168.10.242",
           "comment": "Internal ArgoCD UI (multi-IP)",
           "ttl": 0,
@@ -161,11 +158,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-argowf-192-168-10-240
+  name: cloudflare-dns-argowf-internal-192-168-10-240
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -179,7 +175,7 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "argowf",
+          "name": "argowf-internal",
           "content": "192.168.10.240",
           "comment": "Internal Argo Workflows UI (multi-IP)",
           "ttl": 0,
@@ -215,11 +211,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-argowf-192-168-10-241
+  name: cloudflare-dns-argowf-internal-192-168-10-241
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -233,7 +228,7 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "argowf",
+          "name": "argowf-internal",
           "content": "192.168.10.241",
           "comment": "Internal Argo Workflows UI (multi-IP)",
           "ttl": 0,
@@ -269,11 +264,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-argowf-192-168-10-242
+  name: cloudflare-dns-argowf-internal-192-168-10-242
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -287,7 +281,7 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "argowf",
+          "name": "argowf-internal",
           "content": "192.168.10.242",
           "comment": "Internal Argo Workflows UI (multi-IP)",
           "ttl": 0,
@@ -323,11 +317,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-grafana-192-168-10-240
+  name: cloudflare-dns-grafana-internal-192-168-10-240
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -341,7 +334,7 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "grafana",
+          "name": "grafana-internal",
           "content": "192.168.10.240",
           "comment": "Internal Grafana UI (multi-IP)",
           "ttl": 0,
@@ -377,11 +370,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-grafana-192-168-10-241
+  name: cloudflare-dns-grafana-internal-192-168-10-241
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -395,7 +387,7 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "grafana",
+          "name": "grafana-internal",
           "content": "192.168.10.241",
           "comment": "Internal Grafana UI (multi-IP)",
           "ttl": 0,
@@ -431,11 +423,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-grafana-192-168-10-242
+  name: cloudflare-dns-grafana-internal-192-168-10-242
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -449,7 +440,7 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "grafana",
+          "name": "grafana-internal",
           "content": "192.168.10.242",
           "comment": "Internal Grafana UI (multi-IP)",
           "ttl": 0,
@@ -485,11 +476,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-prometheus-192-168-10-240
+  name: cloudflare-dns-prometheus-internal-192-168-10-240
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -503,7 +493,7 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "prometheus",
+          "name": "prometheus-internal",
           "content": "192.168.10.240",
           "comment": "Internal Prometheus UI (multi-IP)",
           "ttl": 0,
@@ -539,11 +529,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-prometheus-192-168-10-241
+  name: cloudflare-dns-prometheus-internal-192-168-10-241
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -557,7 +546,7 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "prometheus",
+          "name": "prometheus-internal",
           "content": "192.168.10.241",
           "comment": "Internal Prometheus UI (multi-IP)",
           "ttl": 0,
@@ -593,11 +582,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-prometheus-192-168-10-242
+  name: cloudflare-dns-prometheus-internal-192-168-10-242
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -611,7 +599,7 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "prometheus",
+          "name": "prometheus-internal",
           "content": "192.168.10.242",
           "comment": "Internal Prometheus UI (multi-IP)",
           "ttl": 0,
@@ -647,11 +635,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-uptime-192-168-10-240
+  name: cloudflare-dns-uptime-internal-192-168-10-240
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -665,9 +652,9 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "uptime",
+          "name": "uptime-internal",
           "content": "192.168.10.240",
-          "comment": "Kuma Uptime UI (multi-IP)",
+          "comment": "Internal Kuma Uptime UI (multi-IP)",
           "ttl": 0,
           "type": "A"
         }
@@ -701,11 +688,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-uptime-192-168-10-241
+  name: cloudflare-dns-uptime-internal-192-168-10-241
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -719,9 +705,9 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "uptime",
+          "name": "uptime-internal",
           "content": "192.168.10.241",
-          "comment": "Kuma Uptime UI (multi-IP)",
+          "comment": "Internal Kuma Uptime UI (multi-IP)",
           "ttl": 0,
           "type": "A"
         }
@@ -755,11 +741,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-uptime-192-168-10-242
+  name: cloudflare-dns-uptime-internal-192-168-10-242
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -773,9 +758,9 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "uptime",
+          "name": "uptime-internal",
           "content": "192.168.10.242",
-          "comment": "Kuma Uptime UI (multi-IP)",
+          "comment": "Internal Kuma Uptime UI (multi-IP)",
           "ttl": 0,
           "type": "A"
         }
@@ -809,11 +794,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-n8n-192-168-10-240
+  name: cloudflare-dns-n8n-internal-192-168-10-240
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -827,9 +811,9 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "n8n",
+          "name": "n8n-internal",
           "content": "192.168.10.240",
-          "comment": "n8n Workflow Automation UI (multi-IP)",
+          "comment": "Internal n8n Workflow Automation UI (multi-IP)",
           "ttl": 0,
           "type": "A"
         }
@@ -863,11 +847,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-n8n-192-168-10-241
+  name: cloudflare-dns-n8n-internal-192-168-10-241
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -881,9 +864,9 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "n8n",
+          "name": "n8n-internal",
           "content": "192.168.10.241",
-          "comment": "n8n Workflow Automation UI (multi-IP)",
+          "comment": "Internal n8n Workflow Automation UI (multi-IP)",
           "ttl": 0,
           "type": "A"
         }
@@ -917,11 +900,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-n8n-192-168-10-242
+  name: cloudflare-dns-n8n-internal-192-168-10-242
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -935,9 +917,9 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "n8n",
+          "name": "n8n-internal",
           "content": "192.168.10.242",
-          "comment": "n8n Workflow Automation UI (multi-IP)",
+          "comment": "Internal n8n Workflow Automation UI (multi-IP)",
           "ttl": 0,
           "type": "A"
         }
@@ -971,11 +953,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-backups-192-168-10-240
+  name: cloudflare-dns-backups-internal-192-168-10-240
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -989,9 +970,9 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "backups",
+          "name": "backups-internal",
           "content": "192.168.10.240",
-          "comment": "Kopia Backups UI (multi-IP)",
+          "comment": "Internal Kopia Backups UI (multi-IP)",
           "ttl": 0,
           "type": "A"
         }
@@ -1025,11 +1006,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-backups-192-168-10-241
+  name: cloudflare-dns-backups-internal-192-168-10-241
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -1043,9 +1023,9 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "backups",
+          "name": "backups-internal",
           "content": "192.168.10.241",
-          "comment": "Kopia Backups UI (multi-IP)",
+          "comment": "Internal Kopia Backups UI (multi-IP)",
           "ttl": 0,
           "type": "A"
         }
@@ -1079,11 +1059,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-backups-192-168-10-242
+  name: cloudflare-dns-backups-internal-192-168-10-242
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -1097,9 +1076,9 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "backups",
+          "name": "backups-internal",
           "content": "192.168.10.242",
-          "comment": "Kopia Backups UI (multi-IP)",
+          "comment": "Internal Kopia Backups UI (multi-IP)",
           "ttl": 0,
           "type": "A"
         }
@@ -1133,11 +1112,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-auth-192-168-10-240
+  name: cloudflare-dns-auth-internal-192-168-10-240
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -1151,9 +1129,9 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "auth",
+          "name": "auth-internal",
           "content": "192.168.10.240",
-          "comment": "Authentik Identity Provider (multi-IP)",
+          "comment": "Internal Authentik Identity Provider (multi-IP)",
           "ttl": 0,
           "type": "A"
         }
@@ -1187,11 +1165,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-auth-192-168-10-241
+  name: cloudflare-dns-auth-internal-192-168-10-241
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -1205,9 +1182,9 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "auth",
+          "name": "auth-internal",
           "content": "192.168.10.241",
-          "comment": "Authentik Identity Provider (multi-IP)",
+          "comment": "Internal Authentik Identity Provider (multi-IP)",
           "ttl": 0,
           "type": "A"
         }
@@ -1241,11 +1218,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-auth-192-168-10-242
+  name: cloudflare-dns-auth-internal-192-168-10-242
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -1259,9 +1235,9 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "auth",
+          "name": "auth-internal",
           "content": "192.168.10.242",
-          "comment": "Authentik Identity Provider (multi-IP)",
+          "comment": "Internal Authentik Identity Provider (multi-IP)",
           "ttl": 0,
           "type": "A"
         }
@@ -1295,11 +1271,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-garage-192-168-10-240
+  name: cloudflare-dns-garage-internal-192-168-10-240
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -1313,9 +1288,9 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "garage",
+          "name": "garage-internal",
           "content": "192.168.10.240",
-          "comment": "Garage S3 Web (multi-IP)",
+          "comment": "Internal Garage S3 Web (multi-IP)",
           "ttl": 0,
           "type": "A"
         }
@@ -1349,11 +1324,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-garage-192-168-10-241
+  name: cloudflare-dns-garage-internal-192-168-10-241
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -1367,9 +1341,9 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "garage",
+          "name": "garage-internal",
           "content": "192.168.10.241",
-          "comment": "Garage S3 Web (multi-IP)",
+          "comment": "Internal Garage S3 Web (multi-IP)",
           "ttl": 0,
           "type": "A"
         }
@@ -1403,11 +1377,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-garage-192-168-10-242
+  name: cloudflare-dns-garage-internal-192-168-10-242
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -1421,9 +1394,9 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "garage",
+          "name": "garage-internal",
           "content": "192.168.10.242",
-          "comment": "Garage S3 Web (multi-IP)",
+          "comment": "Internal Garage S3 Web (multi-IP)",
           "ttl": 0,
           "type": "A"
         }
@@ -1457,11 +1430,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-garage-admin-192-168-10-240
+  name: cloudflare-dns-garage-admin-internal-192-168-10-240
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -1475,9 +1447,9 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "garage-admin",
+          "name": "garage-admin-internal",
           "content": "192.168.10.240",
-          "comment": "Garage Admin API (multi-IP)",
+          "comment": "Internal Garage Admin API (multi-IP)",
           "ttl": 0,
           "type": "A"
         }
@@ -1511,11 +1483,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-garage-admin-192-168-10-241
+  name: cloudflare-dns-garage-admin-internal-192-168-10-241
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -1529,9 +1500,9 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "garage-admin",
+          "name": "garage-admin-internal",
           "content": "192.168.10.241",
-          "comment": "Garage Admin API (multi-IP)",
+          "comment": "Internal Garage Admin API (multi-IP)",
           "ttl": 0,
           "type": "A"
         }
@@ -1565,11 +1536,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-garage-admin-192-168-10-242
+  name: cloudflare-dns-garage-admin-internal-192-168-10-242
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -1583,9 +1553,9 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "garage-admin",
+          "name": "garage-admin-internal",
           "content": "192.168.10.242",
-          "comment": "Garage Admin API (multi-IP)",
+          "comment": "Internal Garage Admin API (multi-IP)",
           "ttl": 0,
           "type": "A"
         }
@@ -1619,11 +1589,10 @@ spec:
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
 ---
-# Source: cloudflare-http/templates/dns.yaml
 apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
-  name: cloudflare-dns-sftp-192-168-10-241
+  name: cloudflare-dns-sftp-internal-192-168-10-241
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -1637,9 +1606,9 @@ spec:
       baseUrl: https://api.cloudflare.com/client/v4/zones/f153ce63fd6ad281b16a3c674b51588f/dns_records
       body: |
         {
-          "name": "sftp",
+          "name": "sftp-internal",
           "content": "192.168.10.241",
-          "comment": "SFTP Access for Scans",
+          "comment": "Internal SFTP Access for Scans",
           "ttl": 0,
           "type": "A"
         }

@@ -10,6 +10,7 @@ spec:
     sectionName: https
   hostnames:
   - grafana.colinbruner.com
+  - grafana-internal.colinbruner.com
   rules:
   - matches:
     - path:

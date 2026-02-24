@@ -12,6 +12,7 @@ spec:
     sectionName: https
   hostnames:
   - garage.colinbruner.com
+  - garage-internal.colinbruner.com
   rules:
   - matches:
     - path:
@@ -34,6 +35,7 @@ spec:
     sectionName: https
   hostnames:
   - garage-admin.colinbruner.com
+  - garage-admin-internal.colinbruner.com
   rules:
   - matches:
     - path:

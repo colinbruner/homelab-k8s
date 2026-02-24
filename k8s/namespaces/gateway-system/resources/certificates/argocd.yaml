@@ -10,3 +10,4 @@ spec:
     kind: ClusterIssuer
   dnsNames:
   - argocd.colinbruner.com
+  - argocd-internal.colinbruner.com

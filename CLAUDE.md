@@ -76,6 +76,7 @@ Located in `k8s/namespaces/`, one directory per Kubernetes namespace:
 - **`n8n/`** — n8n workflow automation
 - **`ollama/`** — Ollama LLM deployment
 - **`sftp/`** — SFTP server deployment
+- **`cloudflared/`** — Cloudflare Tunnel connector (routes public internet traffic to Envoy Gateway)
 
 ### Shared Bases
 Located in `k8s/bases/`:
@@ -125,31 +126,59 @@ The cluster uses **Envoy Gateway** with the Kubernetes Gateway API. A single sha
 - **Gateway + Certificates**: `k8s/namespaces/gateway-system/` (ArgoCD-managed)
 - **HTTPRoutes**: live in each service's namespace directory (e.g., `k8s/namespaces/argocd/resources/argocd-httproute.yaml`)
 - **HTTP-to-HTTPS redirect**: global `HTTPRoute` in `gateway-system`
+- **SecurityPolicy (ext_authz)**: per-HTTPRoute policies in each namespace, using Authentik for forward authentication
+
+### Cloudflare Tunnel (Public Access)
+
+Public internet access uses a **Cloudflare Tunnel** via `cloudflared` pods. Traffic flows:
+`Internet → Cloudflare Edge → Tunnel → cloudflared pod → Envoy Gateway → App`
+
+- **cloudflared deployment**: `k8s/namespaces/cloudflared/` (ArgoCD-managed)
+- **Tunnel config**: ConfigMap with wildcard ingress rule pointing to Envoy Gateway proxy service
+- **DNS**: Public hostnames (`<name>.colinbruner.com`) are CNAME records pointing to the tunnel; internal hostnames (`<name>-internal.colinbruner.com`) are A records pointing to MetalLB IPs
+- **Setup docs**: See `k8s/namespaces/cloudflared/README.md` for full manual setup steps
+
+### Authentik Forward Authentication (ext_authz)
+
+Envoy Gateway SecurityPolicy resources enforce SSO via Authentik's embedded outpost:
+- SecurityPolicy targets individual HTTPRoutes (not the Gateway, to avoid circular deps with auth)
+- Cross-namespace references to `authentik-server` require a `ReferenceGrant` in the `authentik` namespace
+- Example: `k8s/namespaces/monitoring/resources/security-policy.yaml` protects Prometheus
 
 ### Exposing a New Service
 
 To expose `foo.colinbruner.com` in namespace `foo`:
 
-1. **Certificate** — add `k8s/namespaces/gateway-system/resources/certificates/foo.yaml`
+1. **Certificate** — add `k8s/namespaces/gateway-system/resources/certificates/foo.yaml` with both public and internal SANs (`foo.colinbruner.com` + `foo-internal.colinbruner.com`)
 2. **Gateway listener** — add `certificateRef` to `k8s/namespaces/gateway-system/resources/gateway.yaml`
 3. **Kustomization** — add cert to `k8s/namespaces/gateway-system/kustomization.yaml`
-4. **HTTPRoute** — add `httproute.yaml` to `k8s/namespaces/foo/`
-5. **Push to git** — ArgoCD syncs everything automatically
+4. **HTTPRoute** — add `httproute.yaml` to `k8s/namespaces/foo/` with both hostnames
+5. **Internal DNS** — add `foo-internal` A record to `k8s/namespaces/crossplane-system/values.yaml`, run `generate.sh`
+6. **Public DNS** — run `cloudflared tunnel route dns homelab-k8s foo.colinbruner.com`
+7. **SecurityPolicy** (optional) — add ext_authz per `k8s/namespaces/cloudflared/README.md`
+8. **Push to git** — ArgoCD syncs everything automatically
 
 ### DNS Management (Cloudflare)
 
-All Cloudflare DNS A records are defined in `k8s/namespaces/crossplane-system/values.yaml` and
-managed by ArgoCD via Crossplane HTTP provider `Request` CRDs. The `content` field is a list,
-enabling multiple A records per hostname for DNS round-robin across IP pool addresses.
+Two types of DNS records:
 
-To add or change a DNS record:
+**Internal A records** (Crossplane-managed, GitOps):
+Defined in `k8s/namespaces/crossplane-system/values.yaml` with `-internal` suffix.
+Managed by ArgoCD via Crossplane HTTP provider `Request` CRDs.
+
+To add or change an internal DNS record:
 1. Edit `k8s/namespaces/crossplane-system/values.yaml`
 2. Run `bash k8s/namespaces/crossplane-system/generate.sh`
 3. Commit and push — ArgoCD syncs the change
 
-IP pool: `192.168.10.240–243` (MetalLB). Currently:
-- `.240` — Shared Envoy Gateway (all HTTPS services)
-- `.241` — SFTP direct LoadBalancer
+**Public CNAME records** (Cloudflare-managed):
+Point `<name>.colinbruner.com` to `<TUNNEL_ID>.cfargotunnel.com`.
+Created via `cloudflared tunnel route dns` CLI or the Cloudflare dashboard.
+These are NOT managed via Crossplane (tunnel CNAME records are outside GitOps).
+
+IP pool: `192.168.10.240–245` (MetalLB). Currently:
+- `.240–242` — Shared Envoy Gateway (all HTTPS services, internal pool)
+- `.243–245` — External pool (direct LoadBalancer services, opt-in)
 
 ### NFS Storage Layout (UNAS)
 - `unas-docs-ro` — Read-only documents

@@ -10,3 +10,4 @@ spec:
     kind: ClusterIssuer
   dnsNames:
   - n8n.colinbruner.com
+  - n8n-internal.colinbruner.com
