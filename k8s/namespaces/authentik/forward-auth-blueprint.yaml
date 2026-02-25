@@ -1,0 +1,111 @@
+---
+# Authentik Blueprint: Forward Auth Proxy Providers
+#
+# Configures Authentik Proxy Providers (forward auth, single application mode)
+# for services protected by Envoy Gateway SecurityPolicy ext_authz.
+#
+# HOW IT WORKS:
+#   When Envoy's ext_authz filter sends a check to:
+#     GET /outpost.goauthentik.io/auth/nginx
+#   ...the embedded outpost looks up a Proxy Provider whose external_host
+#   matches the X-Forwarded-Host of the original request. If found and the
+#   user has a valid session, it returns 200. If not, it returns 401 with a
+#   Location header redirecting to auth.colinbruner.com for login.
+#
+#   Without a matching Proxy Provider + Application assigned to the outpost,
+#   Authentik returns a bare 401 with no redirect — the browser never reaches
+#   the login page.
+#
+# ADD A NEW SERVICE:
+#   1. Add a ProxyProvider entry below (external_host must match exactly)
+#   2. Add an Application entry referencing the provider
+#   3. Add the provider to the Embedded Outpost providers list at the bottom
+#   4. Add the SecurityPolicy in the service's namespace kustomization
+#   5. Restart the worker to re-apply: kubectl rollout restart deploy/authentik-worker -n authentik
+#
+# NOTE: The Embedded Outpost entry REPLACES the providers list on each apply.
+#       Keep all providers listed together in that single entry.
+#
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: authentik-forward-auth-blueprints
+  namespace: authentik
+data:
+  forward-auth.yaml: |
+    version: 1
+    metadata:
+      name: Forward Auth Proxy Providers
+
+    entries:
+
+      # ── Prometheus ────────────────────────────────────────────────────────────
+      - model: authentik_providers_proxy.proxyprovider
+        state: present
+        identifiers:
+          name: Prometheus Forward Auth
+        attrs:
+          external_host: https://prometheus.colinbruner.com
+          mode: forward_single
+          authorization_flow: !Find
+            - authentik_flows.flow
+            - [slug, default-provider-authorization-implicit-consent]
+          invalidation_flow: !Find
+            - authentik_flows.flow
+            - [slug, default-provider-invalidation-flow]
+
+      - model: authentik_core.application
+        state: present
+        identifiers:
+          slug: prometheus
+        attrs:
+          name: Prometheus
+          provider: !Find
+            - authentik_providers_proxy.proxyprovider
+            - [name, Prometheus Forward Auth]
+          meta_launch_url: https://prometheus.colinbruner.com
+          policy_engine_mode: any
+
+      # ── Grafana ───────────────────────────────────────────────────────────────
+      - model: authentik_providers_proxy.proxyprovider
+        state: present
+        identifiers:
+          name: Grafana Forward Auth
+        attrs:
+          external_host: https://grafana.colinbruner.com
+          mode: forward_single
+          authorization_flow: !Find
+            - authentik_flows.flow
+            - [slug, default-provider-authorization-implicit-consent]
+          invalidation_flow: !Find
+            - authentik_flows.flow
+            - [slug, default-provider-invalidation-flow]
+
+      - model: authentik_core.application
+        state: present
+        identifiers:
+          slug: grafana
+        attrs:
+          name: Grafana
+          provider: !Find
+            - authentik_providers_proxy.proxyprovider
+            - [name, Grafana Forward Auth]
+          meta_launch_url: https://grafana.colinbruner.com
+          policy_engine_mode: any
+
+      # ── Embedded Outpost ──────────────────────────────────────────────────────
+      # Assigns proxy providers to the embedded outpost so it knows which hosts
+      # to handle. This REPLACES the providers list — all providers must be
+      # listed here together.
+      - model: authentik_outposts.outpost
+        state: present
+        identifiers:
+          name: authentik Embedded Outpost
+        attrs:
+          providers:
+            - !Find
+              - authentik_providers_proxy.proxyprovider
+              - [name, Prometheus Forward Auth]
+            - !Find
+              - authentik_providers_proxy.proxyprovider
+              - [name, Grafana Forward Auth]

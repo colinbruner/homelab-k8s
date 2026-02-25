@@ -12,6 +12,7 @@ resources:
   - httproute.yaml
   - reference-grant.yaml
   - social-login-blueprint.yaml
+  - forward-auth-blueprint.yaml
 
 helmGlobals:
   chartHome: ../../../packages/helm

@@ -7,14 +7,19 @@
 ## See social-login-blueprint.yaml in this directory for reference config.
 
 global:
-  # Mount the social login blueprint ConfigMap into the worker so Authentik
-  # auto-discovers and applies it at startup.
+  # Mount blueprint ConfigMaps into the worker via a projected volume so
+  # Authentik auto-discovers and applies all blueprints at startup.
+  # Add new blueprint ConfigMaps to the sources list below.
   volumes:
-    - name: social-blueprints
-      configMap:
-        name: authentik-social-blueprints
+    - name: blueprints
+      projected:
+        sources:
+          - configMap:
+              name: authentik-social-blueprints
+          - configMap:
+              name: authentik-forward-auth-blueprints
   volumeMounts:
-    - name: social-blueprints
+    - name: blueprints
       mountPath: /blueprints/custom
 
   # Inject secrets from 1Password-managed k8s Secrets into all pods
