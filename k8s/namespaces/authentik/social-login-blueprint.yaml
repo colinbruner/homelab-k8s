@@ -74,21 +74,27 @@ data:
             - [slug, default-source-enrollment]
 
       # ── GitHub ─────────────────────────────────────────────────────────────
-      # Good secondary option; requires a GitHub account.
-      - model: authentik_sources_oauth.oauthsource
-        state: present
-        identifiers:
-          slug: github
-        attrs:
-          name: GitHub
-          enabled: false   # Set to true after adding credentials
-          provider_type: github
-          consumer_key: ""       # Replace with GitHub Client ID
-          consumer_secret: ""    # Replace with GitHub Client Secret
-          user_matching_mode: identifier
-          authentication_flow: !Find
-            - authentik_flows.flow
-            - [slug, default-source-authentication]
-          enrollment_flow: !Find
-            - authentik_flows.flow
-            - [slug, default-source-enrollment]
+      # Uncomment and populate once GitHub OAuth credentials are ready.
+      # Create credentials at: https://github.com/settings/developers → New OAuth App
+      #   Authorization callback URL: https://auth.colinbruner.com/source/oauth/callback/github/
+      # Then store in 1Password (vault: lab, item: "Authentik Social Login"):
+      #   github_client_id / github_client_secret
+      # And add env vars to values.yaml global.env + social-1password.yaml.
+      #
+      # - model: authentik_sources_oauth.oauthsource
+      #   state: present
+      #   identifiers:
+      #     slug: github
+      #   attrs:
+      #     name: GitHub
+      #     enabled: true
+      #     provider_type: github
+      #     consumer_key: !Env GITHUB_CLIENT_ID
+      #     consumer_secret: !Env GITHUB_CLIENT_SECRET
+      #     user_matching_mode: identifier
+      #     authentication_flow: !Find
+      #       - authentik_flows.flow
+      #       - [slug, default-source-authentication]
+      #     enrollment_flow: !Find
+      #       - authentik_flows.flow
+      #       - [slug, default-source-enrollment]
