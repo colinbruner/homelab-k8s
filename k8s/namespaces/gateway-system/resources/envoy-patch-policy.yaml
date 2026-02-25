@@ -1,0 +1,76 @@
+---
+# EnvoyPatchPolicy: Inject X-Forwarded-Host and X-Original-URL headers
+#
+# WHY THIS EXISTS:
+#   Envoy's ext_authz HTTP filter sends the auth check request to Authentik
+#   using the auth service address as the HTTP Host header
+#   (authentik-server.authentik:80), NOT the original request host.
+#
+#   Authentik's embedded outpost does virtual-host routing — it matches
+#   incoming requests by the Host header to find the right Proxy Provider.
+#   With Host: authentik-server.authentik:80, no provider matches and the
+#   outpost returns Go's default "404 page not found" (19 bytes), causing
+#   Envoy to log ext_authz_denied with response_code 404.
+#
+#   The nginx forward auth endpoint (/outpost.goauthentik.io/auth/nginx)
+#   also needs either X-Original-URL or X-Forwarded-Host to determine
+#   which application the request is for. Neither header is added
+#   automatically by Envoy or cloudflared.
+#
+# WHAT THIS DOES:
+#   Inserts a Lua HTTP filter at position 0 in the HTTPS listener's filter
+#   chain, before both ext_authz filters. For every inbound request, the
+#   Lua script reads the original :authority (Host) and :path pseudo-headers
+#   and adds:
+#     X-Forwarded-Host: <original-host>       (e.g. prometheus.colinbruner.com)
+#     X-Original-URL:   https://<host><path>  (e.g. https://prometheus.colinbruner.com/)
+#
+#   These headers are then forwarded to Authentik in the ext_authz check,
+#   allowing the outpost to match the correct Proxy Provider and respond
+#   with a 401 redirect (unauthenticated) or 200 (authenticated) instead
+#   of 404 (no provider found).
+#
+#   The headers are also visible to backend apps after auth passes, but
+#   are harmless to Grafana, Prometheus, ArgoCD, etc.
+#
+# MAINTENANCE:
+#   The JSONPatch path targets filter_chains/0/filters/0/typed_config/http_filters/0.
+#   If the gateway listener structure changes (e.g. new SecurityPolicies add
+#   more filter chains), verify the listener structure via:
+#     kubectl port-forward -n envoy-gateway-system <envoy-pod> 19001:19000
+#     curl -s http://localhost:19001/config_dump | <inspect http_filters>
+#
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyPatchPolicy
+metadata:
+  name: authentik-forward-auth-headers
+  namespace: gateway-system
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: shared-gateway
+    namespace: gateway-system
+  type: JSONPatch
+  jsonPatches:
+  - type: "type.googleapis.com/envoy.config.listener.v3.Listener"
+    name: "gateway-system/shared-gateway/https"
+    operation:
+      op: add
+      path: "/filter_chains/0/filters/0/typed_config/http_filters/0"
+      value:
+        name: "envoy.filters.http.lua"
+        typed_config:
+          "@type": "type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua"
+          default_source_code:
+            inline_string: |-
+              function envoy_on_request(request_handle)
+                local authority = request_handle:headers():get(":authority")
+                local path = request_handle:headers():get(":path") or "/"
+                if authority then
+                  request_handle:headers():remove("X-Forwarded-Host")
+                  request_handle:headers():remove("X-Original-URL")
+                  request_handle:headers():add("X-Forwarded-Host", authority)
+                  request_handle:headers():add("X-Original-URL", "https://" .. authority .. path)
+                end
+              end

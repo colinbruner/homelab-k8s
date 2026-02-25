@@ -4,6 +4,7 @@ namespace: gateway-system
 
 resources:
   - resources/envoy-proxy.yaml
+  - resources/envoy-patch-policy.yaml
   - resources/gateway.yaml
   - resources/http-redirect.yaml
   - resources/certificates/argocd.yaml
