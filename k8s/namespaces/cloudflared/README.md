@@ -66,7 +66,7 @@ The public CNAME records are managed via Cloudflare (dashboard or CLI).
 2. Navigate to **Networks > Tunnels**
 3. Click **Create a tunnel**
 4. Choose **Cloudflared** as the connector type
-5. Name the tunnel (e.g., `homelab-k8s`)
+5. Name the tunnel (e.g., `homelab`)
 6. **Save the tunnel credentials** — you will get:
    - A `credentials.json` file containing:
      ```json
@@ -393,7 +393,7 @@ To expose a new service `foo.colinbruner.com`:
 6. **Public DNS**: Create CNAME record:
 
    ```bash
-   cloudflared tunnel route dns homelab-k8s foo.colinbruner.com
+   cloudflared tunnel route dns homelab foo.colinbruner.com
    ```
 
 7. **SecurityPolicy** (optional): Add ext_authz per the instructions above

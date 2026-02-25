@@ -23,3 +23,6 @@ spec:
   - group: ""
     kind: Service
     name: authentik-server
+  - group: ""
+    kind: Service
+    name: auth-proxy

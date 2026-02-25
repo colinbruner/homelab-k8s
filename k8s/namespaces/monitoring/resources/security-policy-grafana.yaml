@@ -24,7 +24,7 @@ spec:
   extAuth:
     http:
       backendRefs:
-      - name: authentik-server
+      - name: auth-proxy
         namespace: authentik
         port: 80
       headersToBackend:

@@ -17,7 +17,8 @@ function install_gateway() {
     helm install eg oci://docker.io/envoyproxy/gateway-helm \
       --version ${EG_VERSION} \
       --namespace ${NAMESPACE} \
-      --create-namespace
+      --create-namespace \
+      -f ${SCRIPTPATH}/helm-values.yaml
 
     # 3. Wait for Envoy Gateway to be ready
     kubectl wait --timeout=5m -n ${NAMESPACE} \
