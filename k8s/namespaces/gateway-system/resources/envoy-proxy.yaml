@@ -12,7 +12,3 @@ spec:
         # This gives a stable DNS name for cluster-internal consumers like cloudflared:
         #   https://envoy-proxy.envoy-gateway-system.svc.cluster.local:443
         name: envoy-proxy
-        annotations:
-          # Pin the MetalLB IP so it survives service recreation.
-          # TODO: unpin this post re-creation.
-          metallb.io/loadBalancerIPs: 192.168.10.242
