@@ -72,7 +72,6 @@ Located in `k8s/namespaces/`, one directory per Kubernetes namespace:
 - **`gateway-system/`** — Shared Gateway, TLS Certificates, HTTP-to-HTTPS redirect
 - **`monitoring/`** — Grafana CR, secrets, dashboards, datasources, HTTPRoutes for Grafana and Prometheus
 - **`monitoring-uptime/`** — Kuma uptime monitoring
-- **`authentik/`** — Authentik Identity Provider (SSO/OIDC)
 - **`n8n/`** — n8n workflow automation
 - **`ollama/`** — Ollama LLM deployment
 - **`sftp/`** — SFTP server deployment
@@ -98,7 +97,7 @@ helmCharts:
 
 Available charts:
 - **`postgres/`** — Single-instance PostgreSQL StatefulSet, NFS-compatible (configurable
-  `securityContext`/`fsGroup`, `PGDATA` subdirectory, pg_hba.conf). Used by `authentik` and `n8n`.
+  `securityContext`/`fsGroup`, `PGDATA` subdirectory, pg_hba.conf). Used by `n8n`.
 - **`cloudflare/`** — Crossplane HTTP provider `Request` resources for Cloudflare DNS A records.
 
 ### Cluster-Scoped Resources
@@ -126,7 +125,6 @@ The cluster uses **Envoy Gateway** with the Kubernetes Gateway API. A single sha
 - **Gateway + Certificates**: `k8s/namespaces/gateway-system/` (ArgoCD-managed)
 - **HTTPRoutes**: live in each service's namespace directory (e.g., `k8s/namespaces/argocd/resources/argocd-httproute.yaml`)
 - **HTTP-to-HTTPS redirect**: global `HTTPRoute` in `gateway-system`
-- **SecurityPolicy (ext_authz)**: per-HTTPRoute policies in each namespace, using Authentik for forward authentication
 
 ### Cloudflare Tunnel (Public Access)
 
@@ -138,13 +136,6 @@ Public internet access uses a **Cloudflare Tunnel** via `cloudflared` pods. Traf
 - **DNS**: Public hostnames (`<name>.colinbruner.com`) are CNAME records pointing to the tunnel; internal hostnames (`<name>-internal.colinbruner.com`) are A records pointing to MetalLB IPs
 - **Setup docs**: See `k8s/namespaces/cloudflared/README.md` for full manual setup steps
 
-### Authentik Forward Authentication (ext_authz)
-
-Envoy Gateway SecurityPolicy resources enforce SSO via Authentik's embedded outpost:
-- SecurityPolicy targets individual HTTPRoutes (not the Gateway, to avoid circular deps with auth)
-- Cross-namespace references to `authentik-server` require a `ReferenceGrant` in the `authentik` namespace
-- Example: `k8s/namespaces/monitoring/resources/security-policy.yaml` protects Prometheus
-
 ### Exposing a New Service
 
 To expose `foo.colinbruner.com` in namespace `foo`:
@@ -155,8 +146,7 @@ To expose `foo.colinbruner.com` in namespace `foo`:
 4. **HTTPRoute** — add `httproute.yaml` to `k8s/namespaces/foo/` with both hostnames
 5. **Internal DNS** — add `foo-internal` A record to `k8s/namespaces/crossplane-system/values.yaml`, run `generate.sh`
 6. **Public DNS** — run `cloudflared tunnel route dns homelab-k8s foo.colinbruner.com`
-7. **SecurityPolicy** (optional) — add ext_authz per `k8s/namespaces/cloudflared/README.md`
-8. **Push to git** — ArgoCD syncs everything automatically
+7. **Push to git** — ArgoCD syncs everything automatically
 
 ### DNS Management (Cloudflare)
 

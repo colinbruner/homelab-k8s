@@ -7,7 +7,5 @@ resources:
   - resources/grafana.yaml
   - resources/grafana-httproute.yaml
   - resources/prometheus-httproute.yaml
-  - resources/security-policy-prometheus.yaml
-  - resources/security-policy-grafana.yaml
   - dashboards
   - datasources
