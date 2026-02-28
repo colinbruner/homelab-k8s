@@ -2,6 +2,8 @@ apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDatasource
 metadata:
   name: prometheus
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   datasource:
     access: proxy

@@ -2,6 +2,13 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: monitoring
 
+helmCharts:
+  - name: grafana-operator
+    releaseName: grafana-operator
+    repo: oci://ghcr.io/grafana/helm-charts
+    version: "5.22.0"
+    namespace: monitoring
+
 resources:
   - resources/onepassword-secret.yaml
   - resources/grafana.yaml

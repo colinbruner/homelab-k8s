@@ -3,9 +3,8 @@
 Bootstrap installs the monitoring **operators only**:
 
 - **Prometheus**: `prometheus/install.sh` builds manifests from Jsonnet and installs Prometheus Operator CRDs + core components. Custom resources (ScrapeConfig, ServiceMonitor) are also applied here as they are tightly coupled to the operator install.
-- **Grafana**: `grafana/install.sh` installs the Grafana Operator Helm chart.
 
-All application-level resources (Grafana CR, secrets, HTTPRoutes, dashboards, datasources) are managed by ArgoCD via `k8s/namespaces/monitoring/`.
+All application-level resources (Grafana Operator, Grafana CR, secrets, HTTPRoutes, dashboards, datasources) are managed by ArgoCD via `k8s/namespaces/monitoring/`.
 
 ## Install
 
