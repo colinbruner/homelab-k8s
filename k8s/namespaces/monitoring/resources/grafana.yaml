@@ -28,3 +28,5 @@ spec:
                     secretKeyRef:
                       name: 1password-grafana-admin
                       key: password
+                - name: GF_INSTALL_PLUGINS
+                  value: googlecloud-logging-datasource
