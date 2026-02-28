@@ -9,6 +9,10 @@ metadata:
 spec:
   version: "12.4.0"
   config:
+    server:
+      protocol: "https"
+      domain: "colinbruner.com"
+      root_url: "https://grafana.colinbruner.com/"
     log:
       mode: "console"
     auth:
