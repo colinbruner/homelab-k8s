@@ -10,7 +10,7 @@ spec:
   version: "12.4.0"
   config:
     server:
-      protocol: "https"
+      protocol: "http"
       domain: "colinbruner.com"
       root_url: "https://grafana.colinbruner.com/"
     log:
