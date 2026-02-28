@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-HELM_CHART_VERSION="v5.15.1"
+HELM_CHART_VERSION="5.22.0"
 
 function install_grafana() {
     helm upgrade -i grafana-operator \

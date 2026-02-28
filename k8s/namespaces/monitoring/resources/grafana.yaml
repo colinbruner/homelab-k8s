@@ -5,6 +5,7 @@ metadata:
   labels:
     dashboards: "grafana"
 spec:
+  version: "12.4.0"
   config:
     log:
       mode: "console"
