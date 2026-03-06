@@ -10,6 +10,13 @@ data:
     no-autoupdate: true
 
     ingress:
+      # Proxmox VE: routed directly to PVE nodes, bypassing Envoy Gateway.
+      # Load balanced across 3 nodes via the proxmox Kubernetes Service + Endpoints.
+      - hostname: "pve.colinbruner.com"
+        service: https://proxmox.cloudflared.svc.cluster.local:8006
+        originRequest:
+          noTLSVerify: true
+
       # Wildcard rule: routes all matched hostnames to Envoy Gateway.
       # Only hostnames with Cloudflare DNS CNAME records pointing to the
       # tunnel will actually reach cloudflared — this is the access control.

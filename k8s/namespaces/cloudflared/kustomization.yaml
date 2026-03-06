@@ -8,3 +8,4 @@ resources:
   - resources/1password-tunnel.yaml
   - resources/configmap.yaml
   - resources/deployment.yaml
+  - resources/proxmox-service.yaml
