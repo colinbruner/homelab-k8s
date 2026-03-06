@@ -11,6 +11,7 @@ helmCharts:
 
 resources:
   - resources/onepassword-secret.yaml
+  - resources/onepassword-pocket-id-oauth.yaml
   - resources/grafana.yaml
   - resources/grafana-httproute.yaml
   - resources/prometheus-httproute.yaml

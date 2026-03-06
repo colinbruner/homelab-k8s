@@ -20,6 +20,21 @@ spec:
       mode: "console"
     auth:
       disable_login_form: "false"
+    auth.generic_oauth:
+      enabled: "true"
+      name: "Authenticate"
+      allow_sign_up: "false"
+      auto_login: "true"
+      scopes: "openid profile email groups"
+      auth_url: "https://auth.colinbruner.com/authorize"
+      token_url: "https://auth.colinbruner.com/api/oidc/token"
+      api_url: "https://auth.colinbruner.com/api/oidc/userinfo"
+      use_pkce: "true"
+      use_refresh_token: "true"
+      role_attribute_path: "contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'grafana-editor') && 'Editor' || 'Viewer'"
+      login_attribute_path: "preferred_username"
+      name_attribute_path: "name"
+      email_attribute_path: "email"
   deployment:
     spec:
       template:
@@ -37,5 +52,15 @@ spec:
                     secretKeyRef:
                       name: 1password-grafana-admin
                       key: password
+                - name: GF_AUTH_GENERIC_OAUTH_CLIENT_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: 1password-pocket-id-oauth
+                      key: client_id
+                - name: GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      name: 1password-pocket-id-oauth
+                      key: client_secret
                 - name: GF_INSTALL_PLUGINS
                   value: googlecloud-logging-datasource
