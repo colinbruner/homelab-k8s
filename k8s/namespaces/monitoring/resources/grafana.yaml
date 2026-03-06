@@ -13,6 +13,9 @@ spec:
       protocol: "http"
       domain: "colinbruner.com"
       root_url: "https://grafana.colinbruner.com/"
+    security:
+      cookie_secure: "true"
+      cookie_samesite: "lax"
     log:
       mode: "console"
     auth:
