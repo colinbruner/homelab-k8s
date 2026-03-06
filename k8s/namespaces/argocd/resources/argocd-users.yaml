@@ -11,3 +11,14 @@ data:
   accounts.crossplane: apiKey
   accounts.colin: login, apiKey
   kustomize.buildOptions: "--enable-helm"
+  oidc.config: |
+    name: Pocket-ID
+    issuer: https://auth.colinbruner.com
+    clientID: $1password-argocd-pocket-id-oauth:client_id
+    clientSecret: $1password-argocd-pocket-id-oauth:client_secret
+    requestedScopes:
+      - openid
+      - profile
+      - email
+      - groups
+    enablePKCEAuthentication: true
