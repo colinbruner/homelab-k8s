@@ -23,7 +23,7 @@ spec:
     auth.generic_oauth:
       enabled: "true"
       name: "Authenticate"
-      allow_sign_up: "false"
+      allow_sign_up: "true"
       auto_login: "true"
       scopes: "openid profile email groups"
       auth_url: "https://auth.colinbruner.com/authorize"
