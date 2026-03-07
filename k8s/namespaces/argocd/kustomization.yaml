@@ -8,4 +8,4 @@ resources:
   - resources/argocd-rbac.yaml
   - resources/argocd-httproute.yaml
   - resources/applicationset.yaml
-  - resources/onepassword-argocd-pocket-id-oauth.yaml
+  - resources/argocd-pocket-id-oauth.yaml

@@ -15,8 +15,8 @@ data:
   oidc.config: |
     name: Pocket-ID
     issuer: https://auth.colinbruner.com
-    clientID: $1password-argocd-pocket-id-oauth:client_id
-    clientSecret: $1password-argocd-pocket-id-oauth:client_secret
+    clientID: $argocd-pocket-id-oauth:client_id
+    clientSecret: $argocd-pocket-id-oauth:client_secret
     requestedScopes:
       - openid
       - profile
