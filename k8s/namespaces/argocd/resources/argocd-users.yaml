@@ -7,6 +7,7 @@ metadata:
     app.kubernetes.io/name: argocd-cm
     app.kubernetes.io/part-of: argocd
 data:
+  url: https://argocd.colinbruner.com
   admin.enabled: "false"
   accounts.crossplane: apiKey
   accounts.colin: login, apiKey
