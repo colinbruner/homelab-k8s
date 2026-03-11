@@ -66,7 +66,7 @@ function applyManifests() {
   local path=$1 # e.g. 'manfests/setup'
   # assumes root of build directory
   kubectl apply -f $path
-  kustomize build $SCRIPTPATH | kubectl apply -f -
+  # ScrapeConfig and ServiceMonitor are managed by ArgoCD via k8s/namespaces/monitoring/
 }
 
 function applyRegexManifests() {

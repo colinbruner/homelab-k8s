@@ -4,5 +4,8 @@ kind: Kustomization
 namespace: crossplane-system
 
 resources:
+  # Crossplane HTTP provider and its Cloudflare config
+  - resources/provider-http.yaml
+  - resources/providerconfig-http-cloudflare.yaml
   # DNS
   - resources/cloudflare # NOTE: generated via generate.sh

@@ -3,5 +3,4 @@ kind: Kustomization
 namespace: metallb-system
 resources:
   - github.com/metallb/metallb/config/native?ref=v0.15.3
-  - resources/ipaddress-pool.yaml
-  - resources/l2-advertisement.yaml
+  # IPAddressPool and L2Advertisement are managed by ArgoCD via k8s/namespaces/metallb-system/

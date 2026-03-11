@@ -15,5 +15,7 @@ resources:
   - resources/grafana.yaml
   - resources/grafana-httproute.yaml
   - resources/prometheus-httproute.yaml
+  - resources/prometheus-scrape.yaml
+  - resources/prometheus-servicemonitor.yaml
   - dashboards
   - datasources

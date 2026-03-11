@@ -17,17 +17,8 @@ function install_cert_manager() {
       --version v1.16.2 \
       --set crds.enabled=true
 
-    # Install CRDs
-    #curl -sS -O https://github.com/cert-manager/cert-manager/releases/download/${CERT_MANAGER_VERSION}/cert-manager.crds.yaml
-    #kubectl apply -f cert-manager.crds.yaml
-    #kubectl wait --for condition=established --timeout=60s -f cert-manager.crds.yaml
-    #rm -f cert-manager.crds.yaml
-
-    ## Install cert-manager
-    #kustctl apply -f https://github.com/cert-manager/cert-manager/releases/download/${CERT_MANAGER_VERSION}/cert-manager.yaml
-
-    # Instal custom resources
-    kustomize build $SCRIPTPATH | kubectl apply -f -
+    # ClusterIssuers (letsencrypt-prod, letsencrypt-staging) are managed by
+    # ArgoCD via k8s/namespaces/cert-manager/
 }
 
 if [[ $(kubens | grep $NAMESPACE) != $NAMESPACE ]]; then
