@@ -89,9 +89,9 @@ k8s/namespaces/beszel/
 |----------|--------|-------|
 | `AUTH_OIDC_CLIENT_ID` | Secret `beszel-oidc` key `client_id` | From 1Password |
 | `AUTH_OIDC_CLIENT_SECRET` | Secret `beszel-oidc` key `client_secret` | From 1Password |
-| `AUTH_OIDC_AUTH_URL` | Literal | Pocket-ID authorization endpoint |
-| `AUTH_OIDC_TOKEN_URL` | Literal | Pocket-ID token endpoint |
-| `AUTH_OIDC_USER_API_URL` | Literal | Pocket-ID userinfo endpoint |
+| `AUTH_OIDC_AUTH_URL` | Secret `beszel-oidc` key `auth_url` | From 1Password |
+| `AUTH_OIDC_TOKEN_URL` | Secret `beszel-oidc` key `token_url` | From 1Password |
+| `AUTH_OIDC_USER_API_URL` | Secret `beszel-oidc` key `user_api_url` | From 1Password |
 | `AUTH_OIDC_DISPLAY_NAME` | Literal | `Pocket-ID` |
 | `AUTH_OIDC_REDIRECT_URL` | Literal | `https://dashboard.colinbruner.com/api/oauth2-redirect` |
 | `DISABLE_PASSWORD_AUTH` | Literal | `false` (set to `true` after OIDC confirmed working) |
