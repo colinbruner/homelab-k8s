@@ -35,6 +35,8 @@ spec:
         name: n8n-tls
       - kind: Secret
         name: garage-tls
+      - kind: Secret
+        name: dashboard-tls
     allowedRoutes:
       namespaces:
         from: All

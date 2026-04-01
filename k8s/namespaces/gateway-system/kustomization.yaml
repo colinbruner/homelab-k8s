@@ -12,3 +12,4 @@ resources:
   - resources/certificates/uptime.yaml
   - resources/certificates/n8n.yaml
   - resources/certificates/garage.yaml
+  - resources/certificates/dashboard.yaml
