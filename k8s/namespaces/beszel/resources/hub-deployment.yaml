@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: beszel-hub
+  namespace: beszel
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: beszel-hub
+  template:
+    metadata:
+      labels:
+        app: beszel-hub
+    spec:
+      containers:
+      - name: beszel
+        image: henrygd/beszel:latest
+        ports:
+        - name: http
+          containerPort: 8090
+        env:
+        - name: AUTH_OIDC_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: beszel-oidc
+              key: client_id
+        - name: AUTH_OIDC_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: beszel-oidc
+              key: client_secret
+        - name: AUTH_OIDC_AUTH_URL
+          valueFrom:
+            secretKeyRef:
+              name: beszel-oidc
+              key: auth_url
+        - name: AUTH_OIDC_TOKEN_URL
+          valueFrom:
+            secretKeyRef:
+              name: beszel-oidc
+              key: token_url
+        - name: AUTH_OIDC_USER_API_URL
+          valueFrom:
+            secretKeyRef:
+              name: beszel-oidc
+              key: user_api_url
+        - name: AUTH_OIDC_DISPLAY_NAME
+          value: "Pocket-ID"
+        - name: AUTH_OIDC_REDIRECT_URL
+          value: "https://dashboard.colinbruner.com/api/oauth2-redirect"
+        - name: DISABLE_PASSWORD_AUTH
+          value: "false"
+        - name: USER_CREATION
+          value: "false"
+        volumeMounts:
+        - name: data
+          mountPath: /beszel_data
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 8090
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8090
+          initialDelaySeconds: 30
+          periodSeconds: 30
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: beszel-hub-data
