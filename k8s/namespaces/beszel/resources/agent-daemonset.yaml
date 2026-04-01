@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: beszel-agent
+  namespace: beszel
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  selector:
+    matchLabels:
+      app: beszel-agent
+  template:
+    metadata:
+      labels:
+        app: beszel-agent
+    spec:
+      hostNetwork: true
+      hostPID: true
+      dnsPolicy: ClusterFirstWithHostNet
+      tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+      containers:
+      - name: beszel-agent
+        image: henrygd/beszel-agent:latest
+        env:
+        - name: KEY
+          valueFrom:
+            secretKeyRef:
+              name: beszel-agent-key
+              key: public_key
+        - name: PORT
+          value: "45876"
+        - name: DOCKER_HOST
+          value: "unix:///run/containerd/containerd.sock"
+        - name: LOG_LEVEL
+          value: "warn"
+        ports:
+        - name: agent
+          containerPort: 45876
+          hostPort: 45876
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
+        volumeMounts:
+        - name: proc
+          mountPath: /host/proc
+          readOnly: true
+        - name: sys
+          mountPath: /host/sys
+          readOnly: true
+        - name: os-release
+          mountPath: /host/etc/os-release
+          readOnly: true
+        - name: containerd-sock
+          mountPath: /run/containerd/containerd.sock
+          readOnly: true
+      volumes:
+      - name: proc
+        hostPath:
+          path: /proc
+      - name: sys
+        hostPath:
+          path: /sys
+      - name: os-release
+        hostPath:
+          path: /etc/os-release
+      - name: containerd-sock
+        hostPath:
+          path: /run/containerd/containerd.sock
