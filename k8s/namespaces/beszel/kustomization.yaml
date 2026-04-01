@@ -11,3 +11,4 @@ resources:
   - resources/hub-deployment.yaml
   - resources/hub-service.yaml
   - resources/agent-daemonset.yaml
+  - resources/httproute.yaml

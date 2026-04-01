@@ -1,0 +1,21 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: beszel
+  namespace: beszel
+spec:
+  parentRefs:
+  - name: shared-gateway
+    namespace: gateway-system
+    sectionName: https
+  hostnames:
+  - dashboard.colinbruner.com
+  - dashboard-internal.colinbruner.com
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    - name: beszel-hub
+      port: 8090
