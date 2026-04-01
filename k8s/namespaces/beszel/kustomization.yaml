@@ -5,3 +5,6 @@ namespace: beszel
 
 resources:
   - namespace.yaml
+  - resources/hub-pvc.yaml
+  - resources/onepassword-secret.yaml
+  - resources/onepassword-agent-key.yaml
