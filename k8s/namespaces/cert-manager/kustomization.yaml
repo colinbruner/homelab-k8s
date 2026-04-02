@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - resources/letsencrypt-prod.yaml
   - resources/letsencrypt-staging.yaml
+  - resources/onepassword-cloudflare.yaml
