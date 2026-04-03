@@ -1,0 +1,14 @@
+apiVersion: gateway.networking.k8s.io/v1alpha3
+kind: BackendTLSPolicy
+metadata:
+  name: beszel-hub
+  namespace: beszel
+spec:
+  targetRefs:
+  - group: ""
+    kind: Service
+    name: beszel-hub
+    namespace: beszel
+  validation:
+    wellKnownCACertificates: System
+    hostname: dashboard.colinbruner.com

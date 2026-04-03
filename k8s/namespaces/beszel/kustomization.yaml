@@ -7,5 +7,6 @@ resources:
   - namespace.yaml
   - resources/onepassword-agent-key.yaml
   - resources/hub-service.yaml
+  - resources/hub-backendtlspolicy.yaml
   - resources/agent-daemonset.yaml
   - resources/httproute.yaml

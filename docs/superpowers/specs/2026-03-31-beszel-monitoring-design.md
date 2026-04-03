@@ -2,49 +2,53 @@
 
 ## Overview
 
-Deploy [Beszel](https://beszel.dev) as a lightweight server monitoring platform on the homelab Kubernetes cluster. Beszel uses a hub + agent architecture: a single hub instance provides the web dashboard and stores historical metrics, while stateless agents run on every node to collect host-level and container metrics.
+Deploy [Beszel](https://beszel.dev) as a lightweight server monitoring platform. The hub runs externally on TrueNAS (`192.168.10.50:30333`) — outside the Kubernetes cluster — due to SQLite's incompatibility with NFS storage (the only storage class available in the cluster). Stateless agents run as a DaemonSet on every cluster node, collecting host-level and container metrics and reporting back to the external hub.
 
 ## Decisions
 
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
-| Access | Public + Internal | `dashboard.colinbruner.com` via Cloudflare Tunnel, `dashboard-internal.colinbruner.com` via Envoy Gateway |
-| Authentication | OIDC via Pocket-ID | Consistent with existing cluster services; credentials from 1Password |
+| Hub location | TrueNAS (`192.168.10.50:30333`) | SQLite is incompatible with NFS; TrueNAS provides local disk storage |
+| Access | Public + Internal | `dashboard.colinbruner.com` via Cloudflare Tunnel, `dashboard-internal.colinbruner.com` via direct LB DNS |
+| Authentication | OIDC via Pocket-ID | Configured directly on TrueNAS Beszel instance |
 | Container monitoring | Yes, via containerd socket | Talos Linux uses containerd; mount socket on agents |
 | Image tags | `latest` | Matches existing deployments (ollama, etc.) |
 | Control plane agents | Yes, with explicit tolerations | Ensures all 9 nodes (3 control + 6 worker) are monitored |
-| Hub storage | Dynamic PVC via `nfs-csi` StorageClass | Auto-provisioned NFS subdirectory; future migration target for all services |
+| K8s ingress routing | Envoy Gateway → LBs → TrueNAS | LBs at `192.168.1.4` and `192.168.10.4` (port 443) provide redundancy and Host-header routing to Beszel |
+| Internal DNS | Managed externally | `dashboard-internal.colinbruner.com` A record managed outside GitOps (not via Crossplane) |
 | Deployment approach | Pure Kustomize | Matches majority of namespace patterns; no Helm chart overhead |
 | Namespace directory | `k8s/namespaces/beszel/` | Named after the tool, consistent with `argocd/`, `ollama/`, etc. |
 
 ## Architecture
 
 ```
-                    ┌─────────────────────────────────────┐
-                    │           Cloudflare Tunnel          │
-                    │   dashboard.colinbruner.com (CNAME)  │
-                    └──────────────┬──────────────────────┘
-                                   │
-                    ┌──────────────▼──────────────────────┐
-                    │         Envoy Gateway (shared)       │
-                    │   dashboard-internal.colinbruner.com │
-                    └──────────────┬──────────────────────┘
-                                   │ HTTPRoute
-                    ┌──────────────▼──────────────────────┐
-                    │          Beszel Hub (Deployment)      │
-                    │   Port 8090 | OIDC via Pocket-ID     │
-                    │   PVC: /beszel_data (nfs-csi, 5Gi)   │
-                    └──────────────┬──────────────────────┘
-                                   │ SSH (Ed25519)
-                    ┌──────────────▼──────────────────────┐
-                    │      Beszel Agents (DaemonSet)        │
-                    │   hostNetwork:true | Port 45876       │
-                    │   9 pods (3 control + 6 worker)       │
-                    │   Mounts: /proc, /sys, containerd.sock│
-                    └─────────────────────────────────────┘
+  Internet
+     │
+     ▼
+  Cloudflare Edge (dashboard.colinbruner.com CNAME → homelab tunnel)
+     │
+     ▼
+  cloudflared pod (k8s: cloudflared namespace)
+     │  wildcard *.colinbruner.com → Envoy Gateway
+     ▼
+  Envoy Gateway / shared-gateway (gateway-system, port 443)
+     │  HTTPRoute: dashboard.colinbruner.com
+     │  Backend: beszel-hub Service (Endpoints: 192.168.1.4, 192.168.10.4:443)
+     ▼
+  Internal Load Balancers (192.168.1.4 + 192.168.10.4, port 443)
+     │  Host-header routing: dashboard.colinbruner.com → Beszel
+     ▼
+  TrueNAS — Beszel Hub (192.168.10.50:30333)
+     │  SSH (Ed25519) → node IPs :45876
+     ▼
+  Beszel Agents (DaemonSet, 9 pods — 3 control + 6 worker nodes)
+     │  hostNetwork:true | Port 45876
+     │  Mounts: /proc, /sys, containerd.sock
 ```
 
-**Communication flow:** The hub initiates SSH connections *to* agents (not the reverse). Agents listen on `<node-ip>:45876` via `hostNetwork: true`. No agent-to-hub connectivity required.
+**Internal access:** `dashboard-internal.colinbruner.com` DNS A record is managed externally (outside GitOps) and points directly to the internal LBs. No Crossplane-managed record.
+
+**Communication flow:** The hub initiates SSH connections *to* agents (not the reverse). Agents listen on `<node-ip>:45876` via `hostNetwork: true`.
 
 ## File Structure
 
@@ -53,66 +57,51 @@ k8s/namespaces/beszel/
 ├── kustomization.yaml
 ├── namespace.yaml
 ├── resources/
-│   ├── onepassword-secret.yaml       # Pocket-ID OIDC credentials
-│   ├── onepassword-agent-key.yaml    # Agent SSH public key
-│   ├── hub-deployment.yaml           # Hub (single replica, sync-wave 0)
-│   ├── hub-service.yaml              # ClusterIP on port 8090
-│   ├── hub-pvc.yaml                  # 5Gi NFS-backed storage
-│   ├── agent-daemonset.yaml          # Agent on all 9 nodes (sync-wave 1)
-│   └── httproute.yaml                # Public + internal hostnames
+│   ├── onepassword-agent-key.yaml    # Agent SSH public key from 1Password
+│   ├── hub-service.yaml              # ClusterIP Service + Endpoints → LBs (192.168.1.4, 192.168.10.4:443)
+│   ├── agent-daemonset.yaml          # Agent DaemonSet on all 9 nodes
+│   └── httproute.yaml                # dashboard.colinbruner.com → beszel-hub service
 ```
 
-**Files modified in other namespaces:**
+**Files in other namespaces:**
 
-- `k8s/namespaces/gateway-system/resources/certificates/dashboard.yaml` — new TLS certificate
-- `k8s/namespaces/gateway-system/resources/gateway.yaml` — add `dashboard-tls` certificateRef
-- `k8s/namespaces/gateway-system/kustomization.yaml` — add cert to resources list
-- `k8s/namespaces/crossplane-system/values.yaml` — add `dashboard-internal` A record
-- `k8s/namespaces/crossplane-system/` — regenerate via `generate.sh`
+- `k8s/namespaces/gateway-system/resources/certificates/dashboard.yaml` — TLS cert (both SANs)
+- `k8s/namespaces/gateway-system/resources/gateway.yaml` — `dashboard-tls` certificateRef
+- `k8s/namespaces/gateway-system/kustomization.yaml` — cert in resources list
+- `k8s/namespaces/cert-manager/resources/onepassword-cloudflare.yaml` — Cloudflare API token secret for DNS-01 cert issuance
+
+**Not in GitOps:**
+- Hub deployment (TrueNAS, managed outside the cluster)
+- OIDC configuration (configured directly on TrueNAS Beszel instance)
+- `dashboard-internal.colinbruner.com` DNS A record (managed externally)
+- `dashboard.colinbruner.com` Cloudflare Tunnel CNAME (managed in Terraform)
 
 ## Component Details
 
-### Hub Deployment
+### Hub (External — TrueNAS)
 
-- **Image:** `henrygd/beszel:latest`
-- **Replicas:** 1 (SQLite is not cluster-safe)
-- **Port:** 8090
-- **Sync-wave:** `0` (deploy before agents)
-- **Volume:** PVC mounted at `/beszel_data`
-- **Probes:**
-  - Liveness: `GET /` on port 8090
-  - Readiness: `GET /api/health` on port 8090
+- **Host:** `192.168.10.50`
+- **Port:** `30333`
+- **Storage:** TrueNAS local disk at `/beszel_data`
+- **Auth:** OIDC via Pocket-ID (configured in Beszel UI on TrueNAS)
+- **Managed by:** TrueNAS Apps / Docker Compose — outside this repo
 
-**Environment variables:**
+### Hub Service + Endpoints (K8s)
 
-| Variable | Source | Value |
-|----------|--------|-------|
-| `AUTH_OIDC_CLIENT_ID` | Secret `beszel-oidc` key `client_id` | From 1Password |
-| `AUTH_OIDC_CLIENT_SECRET` | Secret `beszel-oidc` key `client_secret` | From 1Password |
-| `AUTH_OIDC_AUTH_URL` | Secret `beszel-oidc` key `auth_url` | From 1Password |
-| `AUTH_OIDC_TOKEN_URL` | Secret `beszel-oidc` key `token_url` | From 1Password |
-| `AUTH_OIDC_USER_API_URL` | Secret `beszel-oidc` key `user_api_url` | From 1Password |
-| `AUTH_OIDC_DISPLAY_NAME` | Literal | `Pocket-ID` |
-| `AUTH_OIDC_REDIRECT_URL` | Literal | `https://dashboard.colinbruner.com/api/oauth2-redirect` |
-| `DISABLE_PASSWORD_AUTH` | Literal | `false` (set to `true` after OIDC confirmed working) |
-| `USER_CREATION` | Literal | `false` |
+Provides a stable in-cluster target for the HTTPRoute. Load-balances across both LBs.
 
-### Hub Service
+```yaml
+# Service: selector-less ClusterIP on port 443
+# Endpoints: 192.168.1.4 and 192.168.10.4 on port 443
+```
 
-- **Type:** ClusterIP
-- **Port:** 8090 → 8090
+The LBs use Host-header routing (`dashboard.colinbruner.com`) to forward to TrueNAS Beszel. The original Host header is preserved through the Envoy → LB connection.
 
-### Hub PVC
-
-- **StorageClass:** `nfs-csi`
-- **Access mode:** `ReadWriteOnce`
-- **Size:** 5Gi
-- **Mount path:** `/beszel_data`
+> **Note:** Envoy Gateway sends plain HTTP to backends by default regardless of port. If the LBs require TLS on port 443, a `BackendTLSPolicy` must be added to instruct Envoy to use HTTPS for the backend connection.
 
 ### Agent DaemonSet
 
 - **Image:** `henrygd/beszel-agent:latest`
-- **Sync-wave:** `1` (deploy after hub)
 - **hostNetwork:** `true`
 - **hostPID:** `true`
 - **dnsPolicy:** `ClusterFirstWithHostNet`
@@ -154,17 +143,7 @@ k8s/namespaces/beszel/
 
 ### Secrets (1Password)
 
-**`onepassword-secret.yaml`** — OIDC credentials:
-```yaml
-apiVersion: onepassword.com/v1
-kind: OnePasswordItem
-metadata:
-  name: beszel-oidc
-spec:
-  itemPath: "vaults/lab/items/beszel-oidc"
-```
-
-**`onepassword-agent-key.yaml`** — Agent SSH key:
+**`onepassword-agent-key.yaml`** — Agent SSH key (only K8s secret):
 ```yaml
 apiVersion: onepassword.com/v1
 kind: OnePasswordItem
@@ -183,7 +162,6 @@ parentRefs:
     sectionName: https
 hostnames:
   - dashboard.colinbruner.com
-  - dashboard-internal.colinbruner.com
 rules:
   - matches:
       - path:
@@ -191,38 +169,36 @@ rules:
           value: /
     backendRefs:
       - name: beszel-hub
-        port: 8090
+        port: 443
 ```
 
 ### TLS Certificate
 
-New file at `k8s/namespaces/gateway-system/resources/certificates/dashboard.yaml`:
+File: `k8s/namespaces/gateway-system/resources/certificates/dashboard.yaml`
 - SANs: `dashboard.colinbruner.com`, `dashboard-internal.colinbruner.com`
-- Added as `dashboard-tls` certificateRef in the shared gateway HTTPS listener
+- Issuer: `letsencrypt-prod` (ClusterIssuer)
+- DNS-01 challenge via Cloudflare API token in `cert-manager` namespace (`vaults/lab/items/Cloudflare`)
 
 ### DNS
 
-- **Internal:** `dashboard-internal` A record added to `k8s/namespaces/crossplane-system/values.yaml`, regenerated via `generate.sh`
-- **Public:** `cloudflared tunnel route dns homelab dashboard.colinbruner.com` (manual CLI command)
+- **Public:** `dashboard.colinbruner.com` — Cloudflare Tunnel CNAME, managed in Terraform
+- **Internal:** `dashboard-internal.colinbruner.com` — A record managed externally, points to LBs
 
-## Bootstrap Sequence
+## Bootstrap / Operational Sequence
 
-1. **Push to git** — ArgoCD auto-syncs via ApplicationSet
-2. **Wave 0:** Hub deployment starts, creates SQLite DB and generates SSH key pair in `/beszel_data`
-3. **Wave 1:** Agent DaemonSet starts, agents fail SSH auth (expected — key not yet in 1Password)
-4. **Initial setup:** Access hub UI at `dashboard.colinbruner.com`, complete OIDC login
-5. **Extract SSH key:** From hub UI "Add System" dialog, copy the Ed25519 public key
-6. **Store key:** Create `beszel-agent-key` item in 1Password `lab` vault with `public_key` field
-7. **Agents connect:** 1Password operator syncs secret → agents pick up key → SSH auth succeeds
-8. **Register nodes:** In hub UI, add all 9 nodes using their node IPs and port 45876
-9. **Lock down:** Set `DISABLE_PASSWORD_AUTH=true` in hub deployment once OIDC is confirmed working
+1. **Push to git** — ArgoCD auto-syncs beszel namespace via ApplicationSet
+2. **TrueNAS:** Start Beszel hub container at port 30333, configure OIDC via Pocket-ID in the hub UI
+3. **Extract SSH key:** From hub UI "Add System" dialog, copy the Ed25519 public key
+4. **Store key:** Create/update `beszel-agent-key` item in 1Password `lab` vault, set `public_key` field
+5. **Agents connect:** 1Password operator syncs secret → agents authenticate → hub starts collecting
+6. **Register nodes:** In hub UI, add all 9 nodes using node IPs and port `45876`
+7. **Verify routing:** Confirm `dashboard.colinbruner.com` routes through Cloudflare Tunnel → Envoy Gateway → LBs → TrueNAS
 
 ## Security Considerations
 
-- **No secrets in repo** — all credentials via 1Password operator
-- **OIDC authentication** — Pocket-ID SSO, password auth disabled after setup
-- **User registration disabled** — `USER_CREATION=false`
-- **Agent auth** — Ed25519 SSH key pair, no passwords
+- **No hub secrets in repo** — OIDC and hub config managed on TrueNAS directly
+- **Agent auth** — Ed25519 SSH key pair stored in 1Password, injected via operator
 - **Read-only host mounts** — `/proc`, `/sys`, `/etc/os-release` mounted read-only
 - **Resource limits** — agents capped at 200m CPU / 128Mi memory per node
-- **Network isolation** — hub-to-agent only, agents do not initiate connections
+- **Network isolation** — hub-to-agent SSH only; agents do not initiate connections
+- **PodSecurity** — `beszel` namespace labeled `privileged` to permit hostNetwork/hostPID/hostPath

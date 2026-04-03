@@ -5,9 +5,9 @@ metadata:
   namespace: beszel
 spec:
   ports:
-  - name: http
-    port: 30333
-    targetPort: 30333
+  - name: https
+    port: 443
+    targetPort: 443
   type: ClusterIP
 ---
 apiVersion: v1
@@ -17,7 +17,8 @@ metadata:
   namespace: beszel
 subsets:
 - addresses:
-  - ip: 192.168.10.50
+  - ip: 192.168.1.4
+  - ip: 192.168.10.4
   ports:
-  - name: http
-    port: 30333
+  - name: https
+    port: 443
