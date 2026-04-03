@@ -48,12 +48,6 @@ provider:
           - "192.168.10.241"
           - "192.168.10.242"
         comment: "Internal Garage Admin API (multi-IP)"
-      - name: "dashboard-internal"
-        content:
-          - "192.168.10.240"
-          - "192.168.10.241"
-          - "192.168.10.242"
-        comment: "Internal Beszel Dashboard (multi-IP)"
       # -- Direct LoadBalancer services --
       - name: "sftp-internal"
         content:
