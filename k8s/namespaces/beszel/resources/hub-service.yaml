@@ -4,10 +4,20 @@ metadata:
   name: beszel-hub
   namespace: beszel
 spec:
-  selector:
-    app: beszel-hub
   ports:
   - name: http
-    port: 8090
-    targetPort: 8090
+    port: 30333
+    targetPort: 30333
   type: ClusterIP
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: beszel-hub
+  namespace: beszel
+subsets:
+- addresses:
+  - ip: 192.168.10.50
+  ports:
+  - name: http
+    port: 30333

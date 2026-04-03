@@ -203,7 +203,7 @@ New file at `k8s/namespaces/gateway-system/resources/certificates/dashboard.yaml
 ### DNS
 
 - **Internal:** `dashboard-internal` A record added to `k8s/namespaces/crossplane-system/values.yaml`, regenerated via `generate.sh`
-- **Public:** `cloudflared tunnel route dns homelab-k8s dashboard.colinbruner.com` (manual CLI command)
+- **Public:** `cloudflared tunnel route dns homelab dashboard.colinbruner.com` (manual CLI command)
 
 ## Bootstrap Sequence
 

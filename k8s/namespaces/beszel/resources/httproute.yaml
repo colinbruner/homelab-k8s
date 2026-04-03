@@ -18,4 +18,4 @@ spec:
         value: /
     backendRefs:
     - name: beszel-hub
-      port: 8090
+      port: 30333

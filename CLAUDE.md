@@ -161,7 +161,7 @@ To expose `foo.colinbruner.com` in namespace `foo`:
 3. **Kustomization** — add cert to `k8s/namespaces/gateway-system/kustomization.yaml`
 4. **HTTPRoute** — add `httproute.yaml` to `k8s/namespaces/foo/` with both hostnames
 5. **Internal DNS** — add `foo-internal` A record to `k8s/namespaces/crossplane-system/values.yaml`, run `generate.sh`
-6. **Public DNS** — run `cloudflared tunnel route dns homelab-k8s foo.colinbruner.com`
+6. **Public DNS** — run `cloudflared tunnel route dns homelab foo.colinbruner.com`
 7. **Push to git** — ArgoCD syncs everything automatically
 
 ### DNS Management (Cloudflare)

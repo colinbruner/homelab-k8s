@@ -621,7 +621,7 @@ Create two items in the `lab` vault:
 
 - [ ] **Step 2: Register public DNS via Cloudflare Tunnel**
 
-Run: `cloudflared tunnel route dns homelab-k8s dashboard.colinbruner.com`
+Run: `cloudflared tunnel route dns homelab dashboard.colinbruner.com`
 
 This creates a CNAME record pointing `dashboard.colinbruner.com` to the tunnel.
 
