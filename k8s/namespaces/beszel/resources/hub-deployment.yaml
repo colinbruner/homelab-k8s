@@ -17,6 +17,8 @@ spec:
     spec:
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
+      nodeSelector:
+        kubernetes.io/hostname: worker-01
       containers:
       - name: beszel
         image: henrygd/beszel:latest
@@ -74,5 +76,6 @@ spec:
           periodSeconds: 30
       volumes:
       - name: data
-        persistentVolumeClaim:
-          claimName: beszel-hub-data
+        hostPath:
+          path: /var/lib/beszel
+          type: DirectoryOrCreate
