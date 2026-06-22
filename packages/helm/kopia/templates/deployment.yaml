@@ -1,0 +1,157 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    {{- include "kopia.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "kopia.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "kopia.selectorLabels" . | nindent 8 }}
+    spec:
+      restartPolicy: Always
+      initContainers:
+        - name: init-repo
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+          command:
+            - /bin/bash
+            - -c
+            - |-
+              mkdir -p /app/config && cp /kopia/repository.config $KOPIA_CONFIG_PATH
+
+              if [[ ! -f /app/cache/kopia.repository ]]; then
+                echo "[INFO]: Repository does not exist yet, creating..."
+                kopia repository create gcs \
+                  --bucket {{ .Values.storage.gcsBucket }} \
+                  --credentials-file /tmp/gcp/credentials.json
+              fi
+              echo "[INFO]: Repository Status.."
+              kopia repository status
+
+              echo "[INFO]: Checking for existing policies..."
+              BACKUP_POLICY=$(kopia policy list | grep $BACKUP_TARGET | wc -l)
+              if [[ ! -z $BACKUP_TARGET ]] && [[ $BACKUP_POLICY -eq 0 ]]; then
+                echo "[INFO]: No backup target found for '$BACKUP_TARGET' -- Creating policy..."
+                kopia policy set \
+                  --compression="zstd-better-compression" \
+                  --snapshot-time-crontab="{{ .Values.target.schedule }}" \
+                  $BACKUP_TARGET
+              else
+                echo "[INFO]: Backup target found for '$BACKUP_TARGET'"
+              fi
+              {{- if .Values.chronos.enabled }}
+
+              if [[ ! -z $BACKUP_TARGET ]]; then
+                echo "[INFO]: Ensuring Chronos action hooks on policy for '$BACKUP_TARGET'..."
+                kopia policy set "$BACKUP_TARGET" \
+                  --before-snapshot-root-action /app/actions/chronos-start.sh \
+                  --after-snapshot-root-action /app/actions/chronos-success.sh \
+                  --action-command-mode=optional
+              fi
+              {{- end }}
+          volumeMounts:
+            - name: config
+              mountPath: /app
+              readOnly: false
+            - name: repo-config
+              mountPath: /kopia/
+            - name: gcp-credentials
+              mountPath: /tmp/gcp
+              readOnly: true
+          env:
+            - name: TZ
+              value: "America/Chicago"
+            - name: KOPIA_CONFIG_PATH
+              value: /app/config/repository.config
+            - name: KOPIA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.password.name }}
+                  key: password
+            - name: BACKUP_TARGET
+              value: {{ .Values.target.sourcePath | quote }}
+      containers:
+        - name: {{ .Release.Name }}
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+          command:
+            - /bin/bash
+            - -c
+            - |-
+              # kopia >=0.23 refuses an unauthenticated server (--insecure --without-password)
+              # on a non-loopback bind (0.0.0.0) without this explicit opt-in. The server is
+              # only reachable in-cluster via its Service; this is an isolated lab environment.
+              kopia server start --address=http://0.0.0.0:8080 --insecure --without-password --enable-actions --allow-extremely-dangerous-unauthenticated-server-on-the-network
+          ports:
+            - name: main
+              containerPort: 8080
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: backup
+              mountPath: {{ .Values.target.sourcePath }}
+              readOnly: true
+            - name: config
+              mountPath: /app
+              readOnly: false
+            - name: gcp-credentials
+              mountPath: /tmp/gcp
+              readOnly: true
+            {{- if .Values.chronos.enabled }}
+            - name: actions
+              mountPath: /app/actions
+              readOnly: true
+            {{- end }}
+          env:
+            - name: TZ
+              value: "America/Chicago"
+            - name: KOPIA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.password.name }}
+                  key: password
+            {{- if .Values.chronos.enabled }}
+            - name: CHRONOS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.chronos.name }}
+                  key: token
+            - name: CHRONOS_PING_BASE
+              value: {{ .Values.chronos.pingBase | quote }}
+            {{- end }}
+      volumes:
+        - name: backup
+          persistentVolumeClaim:
+            claimName: backup
+        - name: config
+          persistentVolumeClaim:
+            claimName: config
+        - name: repo-config
+          configMap:
+            name: {{ .Release.Name }}-repo-config
+        - name: gcp-credentials
+          secret:
+            secretName: {{ .Values.secrets.gcpCredentials.name }}
+            items:
+              - key: sa_json
+                path: credentials.json
+        {{- if .Values.chronos.enabled }}
+        - name: actions
+          configMap:
+            name: {{ .Release.Name }}-actions
+            defaultMode: 0755
+        {{- end }}
