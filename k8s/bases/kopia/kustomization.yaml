@@ -7,3 +7,9 @@ resources:
 - pv.yaml
 - pvc.yaml
 - password.yaml
+
+configMapGenerator:
+  - name: kopia-actions
+    files:
+      - actions/chronos-start.sh
+      - actions/chronos-success.sh
