@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: unas-scans-rw
+spec:
+  capacity:
+    storage: 1Ti
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: nfs
+  mountOptions:
+    - hard
+  nfs:
+    path: /var/nfs/shared/scans
+    server: 192.168.10.5
