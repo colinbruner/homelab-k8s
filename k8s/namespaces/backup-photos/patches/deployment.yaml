@@ -29,6 +29,10 @@
         items:
         - key: sa_json
           path: credentials.json
+    - name: actions
+      configMap:
+        name: kopia-actions
+        defaultMode: 0755
 
 ###
 # Mount Volumes
@@ -45,4 +49,7 @@
       readOnly: false
     - name: gcp-credentials
       mountPath: /tmp/gcp
+      readOnly: true
+    - name: actions
+      mountPath: /app/actions
       readOnly: true
