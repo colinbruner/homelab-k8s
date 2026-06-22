@@ -1,0 +1,12 @@
+target:
+  name: photos
+  sourcePath: /Volumes/Photos
+  nfsPath: /var/nfs/shared/Photos
+  schedule: "15 4 * * *"
+  description: "UNAS Photos Backup"
+
+storage:
+  gcsBucket: backup-unas-vol-photos-6f5b
+
+chronos:
+  enabled: true
