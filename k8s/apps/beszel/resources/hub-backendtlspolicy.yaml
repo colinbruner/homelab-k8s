@@ -8,7 +8,6 @@ spec:
   - group: ""
     kind: Service
     name: beszel-hub
-    namespace: beszel
   validation:
     wellKnownCACertificates: System
     hostname: dashboard.colinbruner.com
