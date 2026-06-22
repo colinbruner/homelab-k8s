@@ -29,8 +29,7 @@ Four major layers:
 - **`packages/helm/`** — Local Helm charts (postgres, cloudflare, kopia) consumed by Kustomize `helmCharts:` with `helmGlobals.chartHome`.
 
 Additional:
-- **`k8s/bases/`** — Shared Kustomize bases (kopia base referenced by backup overlays).
-- **`k8s/archived/`** — Retained but not active. Monitoring (prometheus-operator, grafana-operator) is deferred to a follow-up migration.
+- **`k8s/archived/`** — Retained but not active. Monitoring (prometheus-operator, grafana-operator) and bootstrap-monitoring jsonnet are deferred to a follow-up migration.
 
 ## Required Tooling
 
@@ -119,9 +118,6 @@ Both use `automated.prune: true`, `selfHeal: true`, and `syncOptions: [CreateNam
 - **`kopia/`** — Parameterized Kopia backup chart. Each backup target is a single `kopia-values.yaml` in its app overlay.
 - **`cloudflare/`** — Crossplane HTTP provider Request resources for Cloudflare DNS A records.
 - **`postgres/`** — Single-instance PostgreSQL StatefulSet, NFS-compatible.
-
-### Shared Bases (`k8s/bases/`)
-- **`kopia/`** — Shared Kustomize base for Kopia backup overlays.
 
 ### Gateway API / Ingress
 

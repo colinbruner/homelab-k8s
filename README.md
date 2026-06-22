@@ -35,8 +35,6 @@ k8s/
     garage/                         #   Garage S3-compatible storage
     ollama/                         #   Ollama LLM deployment
     sftp/                           #   SFTP server
-  bases/                            # shared Kustomize bases (kopia)
-
 packages/helm/                      # local Helm charts
   cloudflare/                       #   Crossplane DNS Request resources
   kopia/                            #   parameterized Kopia backup chart

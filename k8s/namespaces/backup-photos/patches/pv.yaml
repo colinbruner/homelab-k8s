@@ -1,6 +1,0 @@
-- op: replace
-  path: "/metadata/name"
-  value: backup-photos
-- op: replace
-  path: "/spec/nfs/path"
-  value: /var/nfs/shared/Photos

@@ -1,4 +1,0 @@
-config:
-  extensionApis:
-    # Required for EnvoyPatchPolicy resources (used in gateway-system for Lua filter injection)
-    enableEnvoyPatchPolicy: true
