@@ -22,7 +22,7 @@ echo "[INFO]: Step 1 — Ensuring 1Password root secrets..."
 # Create namespace if absent
 if ! kubectl get namespace 1password >/dev/null 2>&1; then
   echo "[INFO]: Creating 1password namespace..."
-  kubectl apply -f "${SCRIPTPATH}/../k8s/bootstrap/secrets/1password/resources/namespace.yaml"
+  kubectl apply -f "${SCRIPTPATH}/../k8s/platform/1password/namespace.yaml"
 else
   echo "[INFO]: 1password namespace already exists."
 fi
