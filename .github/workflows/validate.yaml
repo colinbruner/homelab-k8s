@@ -89,7 +89,7 @@ jobs:
             kustomize build --enable-helm "$dir" \
               | kubeconform -strict -ignore-missing-schemas \
                   -schema-location default \
-                  -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.Kind}}_{{.ResourceAPIVersion}}.json' \
+                  -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
               || status=1
             echo "::endgroup::"
           }
@@ -169,7 +169,7 @@ jobs:
             kustomize build --enable-helm bootstrap/root \
               | kubeconform -strict -ignore-missing-schemas \
                   -schema-location default \
-                  -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.Kind}}_{{.ResourceAPIVersion}}.json'
+                  -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
           else
             echo "bootstrap/root does not exist yet — skipping"
           fi

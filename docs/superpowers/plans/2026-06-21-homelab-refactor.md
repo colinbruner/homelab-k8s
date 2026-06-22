@@ -26,7 +26,7 @@
   | csi-driver-nfs | `k8s/namespaces/csi-nfs/kustomization.yaml` | (read repo from that file) | `4.11.0` |
   | prometheus/grafana operators | `bootstrap/monitoring/` (jsonnet today) | see Task 8 | pin at impl |
 - **Verification is the test.** For every Kustomize dir touched, the "test" is:
-  `kustomize build --enable-helm <dir> | kubeconform -strict -ignore-missing-schemas -schema-location default -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.Kind}}_{{.ResourceAPIVersion}}.json'`
+  `kustomize build --enable-helm <dir> | kubeconform -strict -ignore-missing-schemas -schema-location default -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'`
   Must exit 0 before commit.
 - **Migration safety:** do NOT delete `k8s/namespaces/` or its ApplicationSet until Task 13. New trees are added alongside the old until cutover.
 - **Commit after every task.** Co-author trailer: `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`.
