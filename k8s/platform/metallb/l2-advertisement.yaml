@@ -1,0 +1,19 @@
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: internal-lb
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+    - internal-lb-pool
+
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: external-lb
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+    - external-lb-pool
