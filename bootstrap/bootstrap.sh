@@ -4,14 +4,13 @@ set -euo pipefail
 SCRIPTPATH="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
 ###############################################################################
-# Cleanup trap — remove temp credentials file and unset token on exit
+# Cleanup trap — remove temp credentials file on exit
 ###############################################################################
 CREDENTIALS_FILE=""
 cleanup() {
   if [[ -n "${CREDENTIALS_FILE}" && -f "${CREDENTIALS_FILE}" ]]; then
     rm -f "${CREDENTIALS_FILE}"
   fi
-  unset OP_CONNECT_TOKEN 2>/dev/null || true
 }
 trap cleanup EXIT
 
@@ -42,14 +41,16 @@ else
   echo "[INFO]: op-credentials secret already exists. Skipping."
 fi
 
-# Create op-connect-token secret if absent
+# Create op-connect-token secret if absent.
+# The token is piped via stdin so it never appears in any process's argv.
 if ! kubectl get secret op-connect-token -n 1password >/dev/null 2>&1; then
   echo "[INFO]: Creating op-connect-token secret..."
-  OP_CONNECT_TOKEN="$(op read "op://homelab/1Password Operator Creds/op connect token")"
-  kubectl create secret generic op-connect-token \
-    --namespace 1password \
-    --from-literal="token=${OP_CONNECT_TOKEN}"
-  unset OP_CONNECT_TOKEN
+  op read "op://homelab/1Password Operator Creds/op connect token" \
+    | kubectl create secret generic op-connect-token \
+        --namespace 1password \
+        --from-file="token=/dev/stdin" \
+        --dry-run=client -o yaml \
+    | kubectl apply -f -
 else
   echo "[INFO]: op-connect-token secret already exists. Skipping."
 fi
