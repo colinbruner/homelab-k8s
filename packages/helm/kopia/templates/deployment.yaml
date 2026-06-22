@@ -116,6 +116,9 @@ spec:
               mountPath: /app/actions
               readOnly: true
             {{- end }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.secrets.password.name | quote }}
           env:
             - name: TZ
               value: "America/Chicago"
