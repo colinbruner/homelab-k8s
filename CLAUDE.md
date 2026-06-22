@@ -22,169 +22,146 @@
 
 Homelab Kubernetes configuration repo. The cluster runs Talos Linux (PXE-provisioned via Ansible), managed with a GitOps approach using ArgoCD.
 
-Five major layers:
-- **`k8s/bootstrap/`** — One-time cluster-wide setup: installs operators, CRDs, and Helm charts only. Run via `bootstrap.sh`. No application-level resources (routes, certs, CRs) belong here.
-- **`k8s/namespaces/`** — ArgoCD-managed apps and configuration, one directory per Kubernetes namespace. All day-2 operational changes go here.
-- **`k8s/bases/`** — Shared Kustomize bases referenced by namespace overlays.
-- **`k8s/cluster/`** — Cluster-scoped resources (PersistentVolumes).
-- **`packages/`** — Reusable local Helm charts consumed by namespace kustomizations via `helmGlobals.chartHome`.
+Four major layers:
+- **`bootstrap/`** — One-time manual setup: creates 1Password root secrets, installs ArgoCD, applies the platform + apps ApplicationSets. Run via `bootstrap/bootstrap.sh`. NOT ArgoCD-managed.
+- **`k8s/platform/`** — ArgoCD-managed infrastructure, ordered by sync-wave annotations (1password -30, metallb -20, cert-manager -15, gateway -10, crossplane/csi-nfs -5, storage 0).
+- **`k8s/apps/`** — ArgoCD-managed services, one directory per app. Discovered by the apps ApplicationSet via a git directory generator.
+- **`packages/helm/`** — Local Helm charts (postgres, cloudflare, kopia) consumed by Kustomize `helmCharts:` with `helmGlobals.chartHome`.
+
+Additional:
+- **`k8s/bases/`** — Shared Kustomize bases (kopia base referenced by backup overlays).
+- **`k8s/archived/`** — Retained but not active. Monitoring (prometheus-operator, grafana-operator) is deferred to a follow-up migration.
 
 ## Required Tooling
 
-Scripts expect these in `PATH`: `kubectl`, `kustomize`, `kfilt`, `yq`, `helm`, `jsonnet`, `jb`
+Scripts and CI expect these in `PATH`: `kubectl`, `kustomize`, `helm`, `kubeconform`
+
+For 1Password secret management: `op` (1Password CLI)
+
+Optional/utility: `kfilt`, `yq`
+
+> **Note:** `jsonnet` and `jb` were used by the old monitoring build (`k8s/archived/monitoring/`). They are not needed for normal operations but may be required if the archived monitoring manifests need to be rebuilt.
 
 ## General Rules
 
 - Always use `trash` instead of `rm` when deleting files or directories.
-- **Bootstrap installs operators/controllers only.** All application-level resources (HTTPRoutes, Certificates, Grafana CRs, etc.) belong in `k8s/namespaces/` where ArgoCD manages them.
+- **Secret injection** uses the 1Password operator — `OnePasswordItem` CRDs pull secrets from the 1Password vault into native K8s Secrets. No secrets are stored in the repo.
+- **Helm charts** are integrated via the `helmCharts:` field in `kustomization.yaml` with remote pinned charts. ArgoCD repo-server runs with `--enable-helm` (configured in `argocd-cm`). Local charts omit `repo` and resolve from `helmGlobals.chartHome`.
 
 ## Common Commands
 
 ### Bootstrap the cluster
 ```bash
-# Run from k8s/bootstrap/ — idempotently installs all components
-./bootstrap.sh
+# One-time setup — creates 1Password secrets, installs ArgoCD, applies ApplicationSets
+./bootstrap/bootstrap.sh
 ```
 
-### Apply Kustomize manifests
+### Build/preview a platform component
 ```bash
-kustomize build k8s/namespaces/<namespace> | kubectl apply -f -
+kustomize build --enable-helm k8s/platform/<component>
+```
+
+### Build/preview an app
+```bash
+kustomize build --enable-helm k8s/apps/<app>
 ```
 
 ### Dry-run / diff before applying
 ```bash
-kustomize build k8s/namespaces/<namespace> | kubectl diff -f -
+kustomize build --enable-helm k8s/platform/<component> | kubectl diff -f -
+kustomize build --enable-helm k8s/apps/<app> | kubectl diff -f -
 ```
 
-### Build Prometheus manifests from Jsonnet
+### Regenerate Cloudflare DNS manifests
 ```bash
-# From k8s/bootstrap/monitoring/prometheus/build/
-jb install
-jsonnet -J vendor main.jsonnet | gojsonyaml > manifests.yaml
-```
-
-### Build and push container images
-Container builds are handled by GitHub Actions on changes to `/build`. To build locally:
-```bash
-docker build -f build/<name>/Containerfile -t <image> build/<name>/
+bash k8s/platform/crossplane/generate.sh
 ```
 
 ## Architecture
 
-### Bootstrap Components (installed once, in order)
-1. **Secrets**: `1password` operator + `external-secrets`
-2. **Networking**: `metallb` → `envoy-gateway` (Helm + GatewayClass) → `cert-manager`
-3. **Infrastructure**: `crossplane` (with HTTP provider for Cloudflare DNS)
-4. **CI/CD**: `argocd` (Helm chart + namespace only)
-5. **Monitoring**: `prometheus-operator` + `grafana-operator` (Helm only)
+### Bootstrap (one-time, manual)
+`bootstrap/bootstrap.sh` performs three idempotent steps:
+1. **1Password root secrets** — creates `op-credentials` and `op-connect-token` in the `1password` namespace via the `op` CLI
+2. **ArgoCD install** — `kustomize build --enable-helm bootstrap/argocd | kubectl apply --server-side`
+3. **GitOps root** — `kubectl apply -k bootstrap/root` (applies platform + apps ApplicationSets)
 
-### Namespaces (ArgoCD-managed)
-Located in `k8s/namespaces/`, one directory per Kubernetes namespace:
-- **`argocd/`** — ArgoCD user configurations, RBAC, ApplicationSet, HTTPRoute
-- **`backup-documents/`** — Kopia backup for UNAS documents (overlay of `bases/kopia`)
-- **`backup-photos/`** — Kopia backup for UNAS photos (overlay of `bases/kopia`)
-- **`crossplane-system/`** — Cloudflare DNS A records (all records, managed via Helm template + generate.sh)
-- **`csi-nfs/`** — CSI-NFS driver and PVs for NFS shares
-- **`gateway-system/`** — Shared Gateway, TLS Certificates, HTTP-to-HTTPS redirect
-- **`monitoring/`** — Grafana CR, secrets, dashboards, datasources, HTTPRoutes for Grafana and Prometheus
-- **`monitoring-uptime/`** — Kuma uptime monitoring
-- **`n8n/`** — n8n workflow automation
+ArgoCD converges everything else.
+
+### GitOps Wiring
+Two ApplicationSets (git directory generators in `bootstrap/root/`):
+- **`platform`** — generates one Application per `k8s/platform/*`, ordered by sync-wave
+- **`apps`** — generates one Application per `k8s/apps/*`
+
+Both use `automated.prune: true`, `selfHeal: true`, and `syncOptions: [CreateNamespace=true]`.
+
+### Platform Components (`k8s/platform/`)
+| Wave | Component    | Purpose                                        |
+|------|------------- |------------------------------------------------|
+| -30  | 1password    | 1Password Connect + operator (root-of-trust)   |
+| -20  | metallb      | MetalLB load balancer                          |
+| -15  | cert-manager | TLS certificate management + ClusterIssuers    |
+| -10  | gateway      | Envoy Gateway, shared Gateway, TLS certs       |
+|  -5  | crossplane   | Crossplane + HTTP provider + Cloudflare DNS    |
+|  -5  | csi-nfs      | CSI NFS driver                                 |
+|   0  | storage      | Cluster-scoped NFS PersistentVolumes           |
+
+### Apps (`k8s/apps/`)
+- **`argocd/`** — ArgoCD user configurations, RBAC, HTTPRoute
+- **`backup-documents/`** — Kopia backup for UNAS documents (uses `packages/helm/kopia`)
+- **`backup-photos/`** — Kopia backup for UNAS photos (uses `packages/helm/kopia`)
+- **`beszel/`** — Beszel monitoring agent
+- **`cloudflared/`** — Cloudflare Tunnel connector (routes public traffic to Envoy Gateway)
+- **`garage/`** — Garage S3-compatible storage
 - **`ollama/`** — Ollama LLM deployment
-- **`sftp/`** — SFTP server deployment
-- **`cloudflared/`** — Cloudflare Tunnel connector (routes public internet traffic to Envoy Gateway)
+- **`sftp/`** — SFTP server
 
-### Shared Bases
-Located in `k8s/bases/`:
-- **`kopia/`** — Shared Kustomize base for Kopia backup overlays
+### Local Helm Charts (`packages/helm/`)
+- **`kopia/`** — Parameterized Kopia backup chart. Each backup target is a single `kopia-values.yaml` in its app overlay.
+- **`cloudflare/`** — Crossplane HTTP provider Request resources for Cloudflare DNS A records.
+- **`postgres/`** — Single-instance PostgreSQL StatefulSet, NFS-compatible.
 
-### Local Helm Charts
-Located in `packages/helm/`, one subdirectory per chart. Consumed by namespace
-`kustomization.yaml` files via:
-```yaml
-helmGlobals:
-  chartHome: ../../../packages/helm   # relative path to packages/helm/ from k8s/namespaces/<ns>/
-
-helmCharts:
-  - name: postgres    # matches packages/helm/postgres/
-    releaseName: postgres
-    namespace: <ns>
-    valuesFile: postgres-values.yaml
-```
-
-Available charts:
-- **`postgres/`** — Single-instance PostgreSQL StatefulSet, NFS-compatible (configurable
-  `securityContext`/`fsGroup`, `PGDATA` subdirectory, pg_hba.conf). Used by `n8n`.
-- **`cloudflare/`** — Crossplane HTTP provider `Request` resources for Cloudflare DNS A records.
-
-### Cluster-Scoped Resources
-Located in `k8s/cluster/`:
-- **`storage/`** — NFS PersistentVolumes for UNAS shares (unas-k8s-rw, unas-docs-ro, unas-scans-rw, unas-uptime-rw)
-
-### Configuration Patterns
-
-**Kustomize** is the primary composition tool. Structure follows base + overlays:
-```
-k8s/bases/<base>/         # Shared core manifests
-k8s/namespaces/<ns>/      # Namespace-specific overlays referencing bases
-```
-
-Helm charts are integrated via the `helmCharts` field in `kustomization.yaml` rather than standalone Helm releases. Remote charts specify a `repo` URL; local charts omit `repo` and are resolved from `helmGlobals.chartHome` (pointing to `packages/helm/`).
-
-**Secret injection** uses the 1Password operator — `OnePasswordItem` CRDs pull secrets from the 1Password vault into native K8s Secrets. No secrets are stored in the repo.
-
-**`install.sh` idempotency pattern**: each bootstrap script checks if its target namespace already exists before applying anything. Safe to re-run.
+### Shared Bases (`k8s/bases/`)
+- **`kopia/`** — Shared Kustomize base for Kopia backup overlays.
 
 ### Gateway API / Ingress
 
-The cluster uses **Envoy Gateway** with the Kubernetes Gateway API. A single shared `Gateway` resource in `gateway-system` terminates TLS for all domains via per-domain `Certificate` CRDs (cert-manager).
+The cluster uses **Envoy Gateway** with the Kubernetes Gateway API. A single shared `Gateway` resource in `k8s/platform/gateway/` terminates TLS for all domains via per-domain `Certificate` CRDs (cert-manager).
 
-- **Gateway + Certificates**: `k8s/namespaces/gateway-system/` (ArgoCD-managed)
-- **HTTPRoutes**: live in each service's namespace directory (e.g., `k8s/namespaces/argocd/resources/argocd-httproute.yaml`)
-- **HTTP-to-HTTPS redirect**: global `HTTPRoute` in `gateway-system`
+- **Gateway + Certificates**: `k8s/platform/gateway/` (ArgoCD-managed)
+- **HTTPRoutes**: live in each service's app directory (e.g., `k8s/apps/argocd/`)
+- **HTTP-to-HTTPS redirect**: global `HTTPRoute` in `k8s/platform/gateway/`
 
 ### Cloudflare Tunnel (Public Access)
 
-Public internet access uses a **Cloudflare Tunnel** via `cloudflared` pods. Traffic flows:
-`Internet → Cloudflare Edge → Tunnel → cloudflared pod → Envoy Gateway → App`
+Traffic flows: `Internet -> Cloudflare Edge -> Tunnel -> cloudflared pod -> Envoy Gateway -> App`
 
-- **cloudflared deployment**: `k8s/namespaces/cloudflared/` (ArgoCD-managed)
-- **Tunnel config**: ConfigMap with wildcard ingress rule pointing to Envoy Gateway proxy service
+- **cloudflared deployment**: `k8s/apps/cloudflared/` (ArgoCD-managed)
 - **DNS**: Public hostnames (`<name>.colinbruner.com`) are CNAME records pointing to the tunnel; internal hostnames (`<name>-internal.colinbruner.com`) are A records pointing to MetalLB IPs
-- **Setup docs**: See `k8s/namespaces/cloudflared/README.md` for full manual setup steps
 
 ### Exposing a New Service
 
 To expose `foo.colinbruner.com` in namespace `foo`:
 
-1. **Certificate** — add `k8s/namespaces/gateway-system/resources/certificates/foo.yaml` with both public and internal SANs (`foo.colinbruner.com` + `foo-internal.colinbruner.com`)
-2. **Gateway listener** — add `certificateRef` to `k8s/namespaces/gateway-system/resources/gateway.yaml`
-3. **Kustomization** — add cert to `k8s/namespaces/gateway-system/kustomization.yaml`
-4. **HTTPRoute** — add `httproute.yaml` to `k8s/namespaces/foo/` with both hostnames
-5. **Internal DNS** — add `foo-internal` A record to `k8s/namespaces/crossplane-system/values.yaml`, run `generate.sh`
+1. **Certificate** — add `k8s/platform/gateway/certificates/foo.yaml` with both public and internal SANs
+2. **Gateway listener** — add `certificateRef` to `k8s/platform/gateway/gateway.yaml`
+3. **Kustomization** — add cert to `k8s/platform/gateway/kustomization.yaml`
+4. **HTTPRoute** — add `httproute.yaml` to `k8s/apps/foo/` with both hostnames
+5. **Internal DNS** — add `foo-internal` A record to `k8s/platform/crossplane/values.yaml`, run `generate.sh`
 6. **Public DNS** — run `cloudflared tunnel route dns homelab foo.colinbruner.com`
 7. **Push to git** — ArgoCD syncs everything automatically
 
 ### DNS Management (Cloudflare)
 
-Two types of DNS records:
-
 **Internal A records** (Crossplane-managed, GitOps):
-Defined in `k8s/namespaces/crossplane-system/values.yaml` with `-internal` suffix.
-Managed by ArgoCD via Crossplane HTTP provider `Request` CRDs.
-
-To add or change an internal DNS record:
-1. Edit `k8s/namespaces/crossplane-system/values.yaml`
-2. Run `bash k8s/namespaces/crossplane-system/generate.sh`
-3. Commit and push — ArgoCD syncs the change
+Defined in `k8s/platform/crossplane/values.yaml` with `-internal` suffix.
+To add/change: edit `values.yaml`, run `bash k8s/platform/crossplane/generate.sh`, commit and push.
 
 **Public CNAME records** (Cloudflare-managed):
-Point `<name>.colinbruner.com` to `<TUNNEL_ID>.cfargotunnel.com`.
-Created via `cloudflared tunnel route dns` CLI or the Cloudflare dashboard.
-These are NOT managed via Crossplane (tunnel CNAME records are outside GitOps).
+Created via `cloudflared tunnel route dns` CLI. NOT managed via Crossplane.
 
-IP pool: `192.168.10.240–245` (MetalLB). Currently:
-- `.240–242` — Shared Envoy Gateway (all HTTPS services, internal pool)
-- `.243–245` — External pool (direct LoadBalancer services, opt-in)
+IP pool: `192.168.10.240-245` (MetalLB):
+- `.240-242` — Shared Envoy Gateway (all HTTPS services, internal pool)
+- `.243-245` — External pool (direct LoadBalancer services, opt-in)
 
 ### NFS Storage Layout (UNAS)
 - `unas-docs-ro` — Read-only documents
@@ -193,4 +170,8 @@ IP pool: `192.168.10.240–245` (MetalLB). Currently:
 - `unas-uptime-rw` — Uptime monitoring data
 
 ### CI/CD
-GitHub Actions (`.github/workflows/build.yaml`) builds container images from `/build` on push. Currently builds the `sftp` image to Docker Hub.
+GitHub Actions (`.github/workflows/validate.yaml`) runs on PRs and pushes to `main`:
+1. **kustomize build** — renders all platform, apps, and bootstrap targets with `--enable-helm`
+2. **kubeconform** — validates rendered output against Kubernetes + CRD schemas
+3. **yamllint + shellcheck** — lints YAML and shell scripts
+4. **ArgoCD validation** — validates `bootstrap/root` manifests against Argo CRD schemas
