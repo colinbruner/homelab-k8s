@@ -1,0 +1,11 @@
+connect:
+  # Reference the existing secret created by bootstrap.sh (NOT managed by this chart)
+  credentialsName: op-credentials
+  credentialsKey: 1password-credentials.json
+
+operator:
+  create: true
+  token:
+    # Reference the existing secret created by bootstrap.sh (NOT managed by this chart)
+    name: op-connect-token
+    key: token
