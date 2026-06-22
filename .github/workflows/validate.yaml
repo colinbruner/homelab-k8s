@@ -1,0 +1,175 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  kustomize-build:
+    name: Kustomize Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kustomize
+        uses: imranismail/setup-kustomize@v2
+        with:
+          kustomize-version: "5.8.1"
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Build kustomize targets
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=0
+
+          for d in bootstrap/argocd bootstrap/root; do
+            if [ -f "$d/kustomization.yaml" ] || [ -f "$d/kustomization.yml" ]; then
+              echo "::group::kustomize build $d"
+              kustomize build --enable-helm "$d" > /dev/null || status=1
+              echo "::endgroup::"
+            else
+              echo "Skipping $d (no kustomization found)"
+            fi
+          done
+
+          for pattern in k8s/platform k8s/apps; do
+            if [ -d "$pattern" ]; then
+              for d in "$pattern"/*/; do
+                [ -e "$d" ] || continue
+                if [ -f "$d/kustomization.yaml" ] || [ -f "$d/kustomization.yml" ]; then
+                  echo "::group::kustomize build $d"
+                  kustomize build --enable-helm "$d" > /dev/null || status=1
+                  echo "::endgroup::"
+                else
+                  echo "Skipping $d (no kustomization found)"
+                fi
+              done
+            else
+              echo "Skipping $pattern/* (directory does not exist)"
+            fi
+          done
+
+          exit "$status"
+
+  kubeconform:
+    name: Kubeconform
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kustomize
+        uses: imranismail/setup-kustomize@v2
+        with:
+          kustomize-version: "5.8.1"
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Install kubeconform
+        run: |
+          curl -fsSL https://github.com/yannh/kubeconform/releases/download/v0.8.0/kubeconform-linux-amd64.tar.gz \
+            | tar xz -C /usr/local/bin kubeconform
+
+      - name: Validate with kubeconform
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=0
+
+          validate() {
+            local dir="$1"
+            echo "::group::kubeconform $dir"
+            kustomize build --enable-helm "$dir" \
+              | kubeconform -strict -ignore-missing-schemas \
+                  -schema-location default \
+                  -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.Kind}}_{{.ResourceAPIVersion}}.json' \
+              || status=1
+            echo "::endgroup::"
+          }
+
+          for d in bootstrap/argocd bootstrap/root; do
+            if [ -f "$d/kustomization.yaml" ] || [ -f "$d/kustomization.yml" ]; then
+              validate "$d"
+            else
+              echo "Skipping $d (no kustomization found)"
+            fi
+          done
+
+          for pattern in k8s/platform k8s/apps; do
+            if [ -d "$pattern" ]; then
+              for d in "$pattern"/*/; do
+                [ -e "$d" ] || continue
+                if [ -f "$d/kustomization.yaml" ] || [ -f "$d/kustomization.yml" ]; then
+                  validate "$d"
+                else
+                  echo "Skipping $d (no kustomization found)"
+                fi
+              done
+            else
+              echo "Skipping $pattern/* (directory does not exist)"
+            fi
+          done
+
+          exit "$status"
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Run yamllint
+        run: yamllint .
+
+      - name: Run shellcheck
+        shell: bash
+        run: |
+          set -euo pipefail
+          scripts=$(git ls-files '*.sh')
+          if [ -n "$scripts" ]; then
+            echo "$scripts" | xargs shellcheck
+          else
+            echo "No shell scripts found"
+          fi
+
+  argocd-validate:
+    name: ArgoCD Validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kustomize
+        uses: imranismail/setup-kustomize@v2
+        with:
+          kustomize-version: "5.8.1"
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Install kubeconform
+        run: |
+          curl -fsSL https://github.com/yannh/kubeconform/releases/download/v0.8.0/kubeconform-linux-amd64.tar.gz \
+            | tar xz -C /usr/local/bin kubeconform
+
+      - name: Validate ArgoCD resources
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -f bootstrap/root/kustomization.yaml ] || [ -f bootstrap/root/kustomization.yml ]; then
+            kustomize build --enable-helm bootstrap/root \
+              | kubeconform -strict -ignore-missing-schemas \
+                  -schema-location default \
+                  -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.Kind}}_{{.ResourceAPIVersion}}.json'
+          else
+            echo "bootstrap/root does not exist yet — skipping"
+          fi

@@ -1,0 +1,35 @@
+extends: default
+
+ignore:
+  - packages/helm/*/templates/
+  - "**/charts/"
+  - "**/vendor/"
+  - .superpowers/
+
+rules:
+  document-start: disable
+  line-length:
+    max: 160
+    level: warning
+  indentation:
+    spaces: consistent
+    indent-sequences: consistent
+    level: warning
+  truthy:
+    level: warning
+  comments:
+    min-spaces-from-content: 1
+    level: warning
+  comments-indentation: disable
+  empty-lines:
+    max: 2
+    level: warning
+  new-line-at-end-of-file:
+    level: warning
+  trailing-spaces:
+    level: warning
+  brackets:
+    max-spaces-inside: 1
+    level: warning
+  key-duplicates:
+    level: warning
