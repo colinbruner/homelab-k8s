@@ -7,6 +7,4 @@ resources:
   - resources/argocd-users.yaml
   - resources/argocd-rbac.yaml
   - resources/argocd-httproute.yaml
-  - resources/applicationset.yaml
-  - resources/application-cronhealth.yaml
   - resources/argocd-pocket-id-oauth.yaml
