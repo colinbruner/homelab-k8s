@@ -1,7 +1,18 @@
 # ArgoCD
 
-ArgoCD is bootstrapped via `k8s/bootstrap/argocd/` (Helm chart + namespace only) and
-self-manages its own configuration from this directory once running.
+## Purpose
+
+Continuous delivery for the cluster. ArgoCD watches this git repo and automatically syncs Kubernetes resources to match the desired state. It is bootstrapped via `k8s/bootstrap/argocd/` (Helm chart + namespace only) and self-manages its own configuration from this directory once running.
+
+## How it works
+
+The ArgoCD Helm chart is installed by bootstrap. This directory contains the day-2 configuration: user accounts, RBAC, the ApplicationSet that generates one Application per namespace directory, and an HTTPRoute for the web UI at `argocd.colinbruner.com`.
+
+## Dependencies
+
+- **gateway** -- the shared Gateway and `argocd-tls` certificate for the HTTPRoute.
+- **1password** -- operator must be running for the `argocd-pocket-id-oauth` secret.
+- Bootstrap must have completed (ArgoCD Helm chart installed).
 
 ## Resources
 
@@ -122,3 +133,19 @@ kubectl patch configmap argocd-cm -n argocd \
 
 The next ArgoCD sync will reconcile `argocd-cm` from git, which also has `admin.enabled: "false"`,
 so this is self-correcting even if you forget.
+
+## Operations
+
+- **Deploy:** Self-managed by ArgoCD (applicationset `apps`). Synced from this directory.
+- **Verify:**
+  ```bash
+  kubectl get pods -n argocd
+  kubectl get applications -n argocd
+  kubectl get applicationsets -n argocd
+  ```
+
+## Secrets
+
+| Secret | Key | Source |
+|---|---|---|
+| `argocd-pocket-id-oauth` | (OAuth credentials) | OnePasswordItem (`vaults/lab/items/argocd-pocket-id-oauth`) |

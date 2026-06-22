@@ -1,5 +1,15 @@
 # Cloudflare Tunnel (cloudflared) + Envoy Gateway + Authentik
 
+## Purpose
+
+Routes public internet traffic into the cluster through a Cloudflare Tunnel, eliminating the need for any open inbound ports. Combined with Authentik for SSO/ext_authz across all public services.
+
+## Dependencies
+
+- **gateway** -- the shared Envoy Gateway that cloudflared forwards traffic to.
+- **1password** -- operator must be running to provision the `cloudflared-tunnel` secret (`vaults/lab/items/cloudflared-tunnel`).
+- **cert-manager** -- TLS certificates for the domains served through the tunnel.
+
 ## Architecture Overview
 
 ```
@@ -455,3 +465,14 @@ dig argocd-internal.colinbruner.com A
 kubectl get certificates -n gateway-system
 kubectl describe certificate argocd-tls -n gateway-system
 ```
+
+## Operations
+
+- **Deploy:** Managed by ArgoCD (applicationset `apps`). Synced from this directory.
+- **Verify:** See the Troubleshooting section above for detailed verification commands.
+
+## Secrets
+
+| Secret | Key | Source |
+|---|---|---|
+| `cloudflared-tunnel` | `token` | OnePasswordItem (`vaults/lab/items/cloudflared-tunnel`) |
