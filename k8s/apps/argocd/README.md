@@ -2,11 +2,11 @@
 
 ## Purpose
 
-Continuous delivery for the cluster. ArgoCD watches this git repo and automatically syncs Kubernetes resources to match the desired state. It is bootstrapped via `k8s/bootstrap/argocd/` (Helm chart + namespace only) and self-manages its own configuration from this directory once running.
+Continuous delivery for the cluster. ArgoCD watches this git repo and automatically syncs Kubernetes resources to match the desired state. It is bootstrapped via `bootstrap/bootstrap.sh` (which runs `kustomize build --enable-helm bootstrap/argocd`) and self-manages its own configuration from this directory once running.
 
 ## How it works
 
-The ArgoCD Helm chart is installed by bootstrap. This directory contains the day-2 configuration: user accounts, RBAC, the ApplicationSet that generates one Application per namespace directory, and an HTTPRoute for the web UI at `argocd.colinbruner.com`.
+The ArgoCD Helm chart is installed by bootstrap. The ApplicationSets that drive GitOps live in `bootstrap/root/` (not in this directory). This directory contains the day-2 user configuration: user accounts, RBAC, Pocket ID OAuth secret, and an HTTPRoute for the web UI at `argocd.colinbruner.com`.
 
 ## Dependencies
 
@@ -19,22 +19,25 @@ The ArgoCD Helm chart is installed by bootstrap. This directory contains the day
 - **User accounts** — `resources/argocd-users.yaml`
 - **RBAC policies** — `resources/argocd-rbac.yaml`
 - **HTTPRoute** — `resources/argocd-httproute.yaml` (routes `argocd.colinbruner.com` via the shared Gateway)
-- **ApplicationSet** — `resources/applicationset.yaml`
+- **Pocket ID OAuth** — `resources/argocd-pocket-id-oauth.yaml` (OnePasswordItem for OAuth credentials)
 
-## ApplicationSet
+## ApplicationSets
 
-`resources/applicationset.yaml` defines a `namespaces` ApplicationSet that uses the Git
-directory generator to watch `k8s/namespaces/` in this repo. ArgoCD automatically creates
-one Application per subdirectory and syncs it to the cluster.
+The ApplicationSets are defined in `bootstrap/root/`, not in this directory:
+
+- **`bootstrap/root/apps-appset.yaml`** — a git directory generator over `k8s/apps/*`. ArgoCD automatically creates one Application per subdirectory and syncs it to the cluster.
+- **`bootstrap/root/platform-appset.yaml`** — a git directory generator over `k8s/platform/*`. Manages platform-layer infrastructure services.
+- **`bootstrap/root/cronhealth-app.yaml`** — the cronhealth Application.
 
 **Behaviour:**
-- Any new directory added under `k8s/namespaces/` is automatically picked up as a new Application.
+- Any new directory added under `k8s/apps/` or `k8s/platform/` is automatically picked up as a new Application.
 - Sync is **automated** with `prune: true` and `selfHeal: true` — resources removed from git
   are pruned from the cluster, and out-of-band changes are reverted.
 - `CreateNamespace=true` means ArgoCD will create the destination namespace if it does not exist.
 
-To add a new namespace/app to GitOps management, simply create a directory with a
-`kustomization.yaml` under `k8s/namespaces/<name>/` and push to `main`.
+To add a new app to GitOps management, simply create a directory with a
+`kustomization.yaml` under `k8s/apps/<name>/` (or `k8s/platform/<name>/` for infrastructure)
+and push to `main`.
 
 ## User Accounts
 

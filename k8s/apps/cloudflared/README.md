@@ -63,7 +63,7 @@ User --> argocd-internal.colinbruner.com
 | **Public** (tunnel) | `<name>.colinbruner.com`          | CNAME       | `<TUNNEL_ID>.cfargotunnel.com` |
 | **Internal** (LAN)  | `<name>-internal.colinbruner.com` | A           | `192.168.10.240/241/242`       |
 
-The `-internal` A records are managed via Crossplane in `k8s/namespaces/crossplane-system/`.
+The `-internal` A records are managed via Crossplane in `k8s/platform/crossplane/`.
 The public CNAME records are managed via Cloudflare (dashboard or CLI).
 
 ---
@@ -222,7 +222,7 @@ For each service you want to protect:
 
 To protect a new service with Authentik ext_authz:
 
-1. **Add the namespace to the ReferenceGrant** in `k8s/namespaces/authentik/reference-grant.yaml`:
+1. **Add the namespace to the ReferenceGrant** in `k8s/apps/authentik/reference-grant.yaml`:
 
    ```yaml
    from:
@@ -366,7 +366,7 @@ following the principle of least privilege.
 
 To expose a new service `foo.colinbruner.com`:
 
-1. **Certificate**: Update `k8s/namespaces/gateway-system/resources/certificates/foo.yaml`
+1. **Certificate**: Update `k8s/platform/gateway/resources/certificates/foo.yaml`
    to include both public and internal SANs:
 
    ```yaml
@@ -375,9 +375,9 @@ To expose a new service `foo.colinbruner.com`:
      - foo-internal.colinbruner.com
    ```
 
-2. **Gateway listener**: Add `certificateRef` to `k8s/namespaces/gateway-system/resources/gateway.yaml`
+2. **Gateway listener**: Add `certificateRef` to `k8s/platform/gateway/resources/gateway.yaml`
 
-3. **Kustomization**: Add cert to `k8s/namespaces/gateway-system/kustomization.yaml`
+3. **Kustomization**: Add cert to `k8s/platform/gateway/kustomization.yaml`
 
 4. **HTTPRoute**: Add both hostnames to the route:
 
@@ -387,7 +387,7 @@ To expose a new service `foo.colinbruner.com`:
      - foo-internal.colinbruner.com
    ```
 
-5. **Internal DNS**: Add to `k8s/namespaces/crossplane-system/values.yaml`:
+5. **Internal DNS**: Add to `k8s/platform/crossplane/values.yaml`:
 
    ```yaml
    - name: "foo-internal"
@@ -398,7 +398,7 @@ To expose a new service `foo.colinbruner.com`:
      comment: "Internal Foo UI (multi-IP)"
    ```
 
-   Then run: `bash k8s/namespaces/crossplane-system/generate.sh`
+   Then run: `bash k8s/platform/crossplane/generate.sh`
 
 6. **Public DNS**: Create CNAME record:
 
