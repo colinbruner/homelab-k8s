@@ -91,7 +91,10 @@ spec:
             - -c
             - |-
               BUCKET=$(cat /app/config/repository.config | grep 'bucket' | awk '{gsub(/"|,/,"",$2); print $2}')
-              kopia server start --address=http://0.0.0.0:8080 --insecure --without-password --enable-actions
+              # kopia >=0.23 refuses an unauthenticated server (--insecure --without-password)
+              # on a non-loopback bind (0.0.0.0) without this explicit opt-in. The server is
+              # only reachable in-cluster via its Service; this is an isolated lab environment.
+              kopia server start --address=http://0.0.0.0:8080 --insecure --without-password --enable-actions --allow-extremely-dangerous-unauthenticated-server-on-the-network
               #echo "[INFO]: Connecting..."
               #kopia repository connect gcs \
               #  --bucket $BUCKET \
