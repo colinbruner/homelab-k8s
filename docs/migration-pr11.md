@@ -87,10 +87,10 @@ Prevent ArgoCD from acting on changes while we reconfigure.
 
 ```bash
 # Scale down the application controller so it cannot sync/prune anything
-kubectl -n argocd scale deploy argo-cd-argocd-application-controller --replicas=0
+kubectl -n argocd scale deploy argocd-applicationset-controller --replicas=0
 
 # Verify it's down
-kubectl -n argocd get deploy argo-cd-argocd-application-controller
+kubectl -n argocd get deploy argocd-applicationset-controller
 ```
 
 This is the safest approach -- with the controller stopped, ArgoCD cannot prune or sync regardless of what happens in git.
