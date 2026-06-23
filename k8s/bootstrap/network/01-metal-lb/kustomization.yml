@@ -1,6 +1,0 @@
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-namespace: metallb-system
-resources:
-  - github.com/metallb/metallb/config/native?ref=v0.15.3
-  # IPAddressPool and L2Advertisement are managed by ArgoCD via k8s/namespaces/metallb-system/

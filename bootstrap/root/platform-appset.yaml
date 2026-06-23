@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: platform
+spec:
+  goTemplate: true
+  goTemplateOptions:
+  - missingkey=default
+  generators:
+  - git:
+      repoURL: https://github.com/colinbruner/homelab-k8s
+      revision: HEAD
+      directories:
+      - path: k8s/platform/*
+  template:
+    metadata:
+      name: '{{.path.basename}}'
+      annotations:
+        argocd.argoproj.io/sync-wave: '{{ get (dict "1password" "-30" "metallb" "-20" "cert-manager" "-15" "gateway" "-10" "crossplane" "-5" "csi-nfs" "-5" "monitoring" "0" "storage" "0") .path.basename | default "0" }}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/colinbruner/homelab-k8s
+        targetRevision: HEAD
+        path: '{{.path.path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{.path.basename}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
