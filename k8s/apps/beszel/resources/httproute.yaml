@@ -6,7 +6,7 @@ metadata:
 spec:
   parentRefs:
   - name: shared-gateway
-    namespace: gateway-system
+    namespace: gateway
     sectionName: https
   hostnames:
   - dashboard.colinbruner.com
