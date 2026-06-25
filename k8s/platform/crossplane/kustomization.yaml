@@ -11,6 +11,7 @@ helmCharts:
     namespace: crossplane-system
 
 resources:
+  - namespace.yaml
   # Crossplane HTTP provider and its Cloudflare config
   - resources/provider-http.yaml
   - resources/providerconfig-http-cloudflare.yaml

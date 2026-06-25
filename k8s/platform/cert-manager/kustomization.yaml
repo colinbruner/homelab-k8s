@@ -9,6 +9,7 @@ helmCharts:
     namespace: cert-manager
     valuesFile: values.yaml
 resources:
+  - namespace.yaml
   - letsencrypt-prod.yaml
   - letsencrypt-staging.yaml
   - onepassword-cloudflare.yaml
