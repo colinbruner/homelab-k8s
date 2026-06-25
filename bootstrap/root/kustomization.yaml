@@ -4,4 +4,3 @@ namespace: argocd
 resources:
 - platform-appset.yaml
 - apps-appset.yaml
-- cronhealth-app.yaml

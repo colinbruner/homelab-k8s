@@ -5,6 +5,7 @@ connect:
 
 operator:
   create: true
+  watchNamespace: []
   token:
     # Reference the existing secret created by bootstrap.sh (NOT managed by this chart)
     name: op-connect-token
