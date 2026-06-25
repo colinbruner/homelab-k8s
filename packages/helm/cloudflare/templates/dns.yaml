@@ -6,6 +6,8 @@ apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
   name: cloudflare-dns-{{ $record.name }}-{{ . | replace "." "-" }}
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   providerConfigRef:
     name: http-cloudflare

@@ -4,6 +4,8 @@ apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
   name: cloudflare-dns-argocd-internal-192-168-10-240
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -58,6 +60,8 @@ apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
   name: cloudflare-dns-argocd-internal-192-168-10-241
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -112,6 +116,8 @@ apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
   name: cloudflare-dns-argocd-internal-192-168-10-242
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -166,6 +172,8 @@ apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
   name: cloudflare-dns-grafana-internal-192-168-10-240
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -220,6 +228,8 @@ apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
   name: cloudflare-dns-grafana-internal-192-168-10-241
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -274,6 +284,8 @@ apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
   name: cloudflare-dns-grafana-internal-192-168-10-242
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -328,6 +340,8 @@ apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
   name: cloudflare-dns-prometheus-internal-192-168-10-240
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -382,6 +396,8 @@ apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
   name: cloudflare-dns-prometheus-internal-192-168-10-241
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -436,6 +452,8 @@ apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
   name: cloudflare-dns-prometheus-internal-192-168-10-242
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -490,6 +508,8 @@ apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
   name: cloudflare-dns-n8n-internal-192-168-10-240
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -544,6 +564,8 @@ apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
   name: cloudflare-dns-n8n-internal-192-168-10-241
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -598,6 +620,8 @@ apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
   name: cloudflare-dns-n8n-internal-192-168-10-242
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -652,6 +676,8 @@ apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
   name: cloudflare-dns-backups-internal-192-168-10-240
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -706,6 +732,8 @@ apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
   name: cloudflare-dns-backups-internal-192-168-10-241
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -760,6 +788,8 @@ apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
   name: cloudflare-dns-backups-internal-192-168-10-242
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -814,6 +844,8 @@ apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
   name: cloudflare-dns-garage-internal-192-168-10-240
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -868,6 +900,8 @@ apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
   name: cloudflare-dns-garage-internal-192-168-10-241
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -922,6 +956,8 @@ apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
   name: cloudflare-dns-garage-internal-192-168-10-242
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -976,6 +1012,8 @@ apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
   name: cloudflare-dns-garage-admin-internal-192-168-10-240
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -1030,6 +1068,8 @@ apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
   name: cloudflare-dns-garage-admin-internal-192-168-10-241
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -1084,6 +1124,8 @@ apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
   name: cloudflare-dns-garage-admin-internal-192-168-10-242
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -1138,6 +1180,8 @@ apiVersion: http.crossplane.io/v1alpha2
 kind: Request
 metadata:
   name: cloudflare-dns-sftp-internal-192-168-10-241
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   providerConfigRef:
     name: http-cloudflare
@@ -1186,3 +1230,4 @@ spec:
       - action: REMOVE
         method: "DELETE"
         url: (.payload.baseUrl + "/" + (.response.body.result.id|tostring))
+
