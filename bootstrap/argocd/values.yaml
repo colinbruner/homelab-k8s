@@ -1,9 +1,14 @@
 ## ArgoCD Helm values
-## chart: argo/argo-cd 9.4.3 (app: v3.3.1)
+## chart: argo/argo-cd 10.0.0 (app: v3.4.4)
 
 global:
   image:
-    tag: "v3.3.1"
+    tag: "v3.4.4"
+  # Chart 10.0.0 flips networkPolicy.create false->true by default. Keep it
+  # disabled to preserve existing connectivity (no cluster-wide NetworkPolicy
+  # adoption yet).
+  networkPolicy:
+    create: false
 
 configs:
   params:
