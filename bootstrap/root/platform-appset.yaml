@@ -16,7 +16,7 @@ spec:
     metadata:
       name: '{{.path.basename}}'
       annotations:
-        argocd.argoproj.io/sync-wave: '{{ get (dict "1password" "-30" "metallb" "-20" "cert-manager" "-15" "gateway" "-10" "crossplane" "-5" "csi-nfs" "-5" "monitoring" "0" "storage" "0") .path.basename | default "0" }}'
+        argocd.argoproj.io/sync-wave: '{{ get (dict "1password" "-30" "metallb" "-20" "cert-manager" "-15" "gateway" "-10" "csi-nfs" "-5" "storage" "0") .path.basename | default "0" }}'
     spec:
       project: default
       source:

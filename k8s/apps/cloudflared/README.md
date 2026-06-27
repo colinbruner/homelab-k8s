@@ -66,7 +66,7 @@ User --> argocd-internal.colinbruner.com
 | **Internal** (LAN)  | `<name>-internal.colinbruner.com` | A           | `192.168.10.240-242`           |
 
 Public CNAME records are created via the Cloudflare dashboard or `cloudflared tunnel route
-dns`. Internal A records are managed in `k8s/platform/crossplane/`.
+dns`. Internal A records are managed via Terraform (Cloudflare, outside this repo).
 
 ## Manual setup (Cloudflare dashboard)
 
@@ -112,8 +112,8 @@ To expose `foo.colinbruner.com` (namespace `foo`):
 2. **Gateway listener** — add the `certificateRef` to `k8s/platform/gateway/gateway.yaml`.
 3. **Kustomization** — add the cert file to `k8s/platform/gateway/kustomization.yaml`.
 4. **HTTPRoute** — add `httproute.yaml` in `k8s/apps/foo/` with both hostnames.
-5. **Internal DNS** — add a `foo-internal` A record in `k8s/platform/crossplane/values.yaml`,
-   then run `bash k8s/platform/crossplane/generate.sh`.
+5. **Internal DNS** — add a `foo-internal` A record (MetalLB Gateway IP) via the Terraform
+   Cloudflare config and apply it.
 6. **Public DNS** — `cloudflared tunnel route dns homelab foo.colinbruner.com`.
 7. **Push to git** — ArgoCD syncs everything automatically.
 

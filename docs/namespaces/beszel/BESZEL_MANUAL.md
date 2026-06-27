@@ -73,7 +73,7 @@ git push origin main
 Monitor the sync in ArgoCD:
 - The `beszel` application should appear automatically (ApplicationSet auto-discovery)
 - The `gateway-system` application will sync the new TLS certificate
-- The `crossplane-system` application will sync the new DNS A record
+- The internal DNS A record is managed via Terraform (Cloudflare, outside this repo)
 
 Check hub pod status:
 ```bash
@@ -209,4 +209,4 @@ Ensure the cert-manager ClusterIssuer `letsencrypt-prod` is working and DNS is r
 dig dashboard-internal.colinbruner.com +short
 # Expected: 192.168.10.240, .241, .242
 ```
-Check that the Crossplane resources synced: `kubectl -n crossplane-system get requests | grep dashboard`
+Verify the `dashboard-internal` A record exists in Cloudflare (managed via Terraform, outside this repo).

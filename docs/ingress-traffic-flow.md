@@ -78,7 +78,7 @@ flowchart TD
 ### Internal (direct LAN)
 
 1. **DNS** — `<name>-internal.colinbruner.com` is an **A** record to a MetalLB IP
-   (`192.168.10.240-242`), managed via Crossplane in `k8s/platform/crossplane/`.
+   (`192.168.10.240-242`), managed via Terraform (Cloudflare, outside this repo).
 2. **MetalLB** advertises the `LoadBalancer` IP for the `envoy-proxy` Service on the LAN.
    Traffic goes straight to Envoy — no Cloudflare involved.
 
