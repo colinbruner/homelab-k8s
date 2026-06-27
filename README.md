@@ -33,17 +33,15 @@ flowchart TD
         p2["metallb  (-20)<br/>LoadBalancer IP allocation"]
         p3["cert-manager  (-15)<br/>ClusterIssuers · LE DNS-01"]
         p4["gateway  (-10)<br/>Envoy Gateway + shared Gateway"]
-        p5["crossplane  (-5)<br/>Cloudflare internal DNS"]
         p6["csi-nfs  (-5)<br/>NFS CSI driver"]
         p7["storage  (0)<br/>NFS PersistentVolumes"]
     end
 
-    platformset --> p1 & p2 & p3 & p4 & p5 & p6 & p7
+    platformset --> p1 & p2 & p3 & p4 & p6 & p7
     appsset --> apps["k8s/apps/* (services)"]
 
     %% Cross-dependencies (what consumes what)
     p1 -.->|Cloudflare API token| p3
-    p1 -.->|provider creds| p5
     p2 -.->|LB IP| p4
     p3 -.->|TLS certs| p4
     p6 -.->|CSI driver| p7
@@ -63,7 +61,6 @@ k8s/
     metallb/                        #   wave -20  load balancer
     cert-manager/                   #   wave -15  TLS certificates
     gateway/                        #   wave -10  Envoy Gateway + Gateway + certs + redirect
-    crossplane/                     #   wave  -5  Crossplane + Cloudflare DNS
     csi-nfs/                        #   wave  -5  CSI NFS driver
     storage/                        #   wave   0  cluster-scoped NFS PVs
   apps/                             # ArgoCD-managed services (wave >= 0)
@@ -73,7 +70,6 @@ k8s/
     cloudflared/                    #   Cloudflare Tunnel connector
     sftp/                           #   SFTP server
 packages/helm/                      # local Helm charts
-  cloudflare/                       #   Crossplane DNS Request resources
   kopia/                            #   parameterized Kopia backup chart
   postgres/                         #   single-instance PostgreSQL StatefulSet
 ```
@@ -86,7 +82,6 @@ packages/helm/                      # local Helm charts
 | -20  | metallb      | Load balancer IP allocation           |
 | -15  | cert-manager | TLS certificate management            |
 | -10  | gateway      | Envoy Gateway, Gateway, certificates  |
-|  -5  | crossplane   | Crossplane + Cloudflare DNS           |
 |  -5  | csi-nfs      | CSI NFS driver                        |
 |   0  | storage      | Cluster-scoped NFS PersistentVolumes  |
 
@@ -124,7 +119,6 @@ See [bootstrap/README.md](./bootstrap/README.md) for details on the root-of-trus
 | metallb      | MetalLB load balancer                                | [README](./k8s/platform/metallb/README.md)                |
 | cert-manager | cert-manager TLS controller + ClusterIssuers         | [README](./k8s/platform/cert-manager/README.md)           |
 | gateway      | Envoy Gateway, shared Gateway, TLS certs, redirect   | [README](./k8s/platform/gateway/README.md)                |
-| crossplane   | Crossplane + HTTP provider + Cloudflare DNS records  | [README](./k8s/platform/crossplane/README.md)             |
 | csi-nfs      | CSI NFS driver                                       | [README](./k8s/platform/csi-nfs/README.md)                |
 | storage      | Cluster-scoped NFS PersistentVolumes                 | [README](./k8s/platform/storage/README.md)                |
 
@@ -143,7 +137,6 @@ See [bootstrap/README.md](./bootstrap/README.md) for details on the root-of-trus
 | Chart      | Description                                              | README                                                |
 |------------|----------------------------------------------------------|-------------------------------------------------------|
 | kopia      | Parameterized Kopia backup chart                         | [README](./packages/helm/kopia/README.md)             |
-| cloudflare | Crossplane HTTP provider Request resources for DNS       | -                                                     |
 | postgres   | Single-instance PostgreSQL StatefulSet                   | -                                                     |
 
 ## Playbooks
@@ -156,7 +149,7 @@ To expose `foo.colinbruner.com` in namespace `foo`:
 2. **Gateway listener** -- add a listener with `certificateRef` to `k8s/platform/gateway/gateway.yaml`
 3. **Kustomization** -- add the cert file to `k8s/platform/gateway/kustomization.yaml`
 4. **HTTPRoute** -- add `httproute.yaml` in `k8s/apps/foo/` with both hostnames
-5. **Internal DNS** -- add `foo-internal` A record to `k8s/platform/crossplane/values.yaml`, run `bash k8s/platform/crossplane/generate.sh`
+5. **Internal DNS** -- add a `foo-internal` A record (pointing at the MetalLB Gateway IP) to the Terraform Cloudflare config and apply it
 6. **Public DNS** -- run `cloudflared tunnel route dns homelab foo.colinbruner.com`
 7. **Push to git** -- ArgoCD syncs everything automatically
 
@@ -188,15 +181,14 @@ See [k8s/apps/backup-documents/](./k8s/apps/backup-documents/) for a working exa
 
 Two types of DNS records:
 
-**Internal A records** (Crossplane-managed, GitOps):
-- Defined in `k8s/platform/crossplane/values.yaml` with `-internal` suffix
-- Managed by ArgoCD via Crossplane HTTP provider Request CRDs
-- To add/change: edit `values.yaml`, run `bash k8s/platform/crossplane/generate.sh`, commit and push
+**Internal A records** (Terraform-managed):
+- `<name>-internal.colinbruner.com` points at the MetalLB Gateway IP (`192.168.10.240-242`)
+- Managed via Terraform (outside this repo; not GitOps) — apply changes with the Terraform Cloudflare workflow
 
 **Public CNAME records** (Cloudflare-managed):
 - Point `<name>.colinbruner.com` to `<TUNNEL_ID>.cfargotunnel.com`
 - Created via `cloudflared tunnel route dns` CLI or the Cloudflare dashboard
-- NOT managed via Crossplane (tunnel CNAME records are outside GitOps)
+- Tunnel CNAME records are outside GitOps
 
 IP pool: `192.168.10.240-245` (MetalLB):
 - `.240-242` -- Shared Envoy Gateway (all HTTPS services, internal pool)

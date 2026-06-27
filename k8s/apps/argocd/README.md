@@ -63,7 +63,6 @@ Then set their password via the CLI after pushing (see provisioning steps below)
 |---|---|---|
 | `admin` | — | Built-in account, **disabled** (`admin.enabled: "false"`) |
 | `colin` | `login, apiKey` | Human operator account |
-| `crossplane` | `apiKey` | Automation account for Crossplane |
 
 ---
 
@@ -120,12 +119,7 @@ argocd login argocd.colinbruner.com --grpc-web --username admin --password <pass
 ```bash
 # Set password for the 'colin' interactive account
 argocd account update-password --account colin --new-password <password>
-
-# Generate an API token for the 'crossplane' automation account
-argocd account generate-token --account crossplane
 ```
-
-Store the `crossplane` token wherever it is consumed (e.g. a 1Password vault item).
 
 ### Step 5 — re-disable the admin account
 
