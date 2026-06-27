@@ -11,6 +11,8 @@ The repo is split into a **one-time bootstrap** and **GitOps-managed** resources
 
 ![Homelab Dependencies](./docs/assets/dependencies.png)
 
+For how requests reach services (public Cloudflare Tunnel and internal LAN paths), see [Ingress Traffic Flow](./docs/ingress-traffic-flow.md).
+
 ```
 bootstrap/                          # one-time, manual (NOT ArgoCD-managed)
   bootstrap.sh                      # single idempotent entrypoint
