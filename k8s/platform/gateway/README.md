@@ -9,7 +9,7 @@ Provides the cluster's shared ingress layer. A single Envoy Gateway terminates T
 The Envoy Gateway Helm chart (v1.7.0, OCI) deploys the controller into `envoy-gateway-system`. Gateway API CRDs (v1.2.1) are installed as a kustomize remote resource. Key resources in this directory:
 
 - **GatewayClass** (`envoy-gateway`) -- binds to the Envoy Gateway controller.
-- **Gateway** (`shared-gateway` in `gateway-system`) -- single HTTPS listener on port 443 terminating TLS with per-domain certificate refs (argocd, grafana, prometheus, uptime, n8n, garage, dashboard), plus an HTTP listener on port 80 for redirect.
+- **Gateway** (`shared-gateway` in `gateway`) -- single HTTPS listener on port 443 terminating TLS with per-domain certificate refs (argocd, dashboard), plus an HTTP listener on port 80 for redirect.
 - **Certificates** -- per-domain TLS certificates in `certificates/` issued by cert-manager (`letsencrypt-prod`).
 - **EnvoyProxy** (`proxy-config`) -- provides a stable service name for cloudflared to target.
 - **HTTP-to-HTTPS redirect** -- global HTTPRoute redirecting port 80 to 443.

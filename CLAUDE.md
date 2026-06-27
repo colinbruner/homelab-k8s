@@ -28,9 +28,6 @@ Four major layers:
 - **`k8s/apps/`** — ArgoCD-managed services, one directory per app. Discovered by the apps ApplicationSet via a git directory generator.
 - **`packages/helm/`** — Local Helm charts (postgres, cloudflare, kopia) consumed by Kustomize `helmCharts:` with `helmGlobals.chartHome`.
 
-Additional:
-- **`k8s/archived/`** — Retained but not active. Monitoring (prometheus-operator, grafana-operator) and bootstrap-monitoring jsonnet are deferred to a follow-up migration.
-
 ## Required Tooling
 
 Scripts and CI expect these in `PATH`: `kubectl`, `kustomize`, `helm`, `kubeconform`
@@ -38,8 +35,6 @@ Scripts and CI expect these in `PATH`: `kubectl`, `kustomize`, `helm`, `kubeconf
 For 1Password secret management: `op` (1Password CLI)
 
 Optional/utility: `kfilt`, `yq`
-
-> **Note:** `jsonnet` and `jb` were used by the old monitoring build (`k8s/archived/monitoring/`). They are not needed for normal operations but may be required if the archived monitoring manifests need to be rebuilt.
 
 ## General Rules
 
@@ -107,11 +102,8 @@ Both use `automated.prune: true`, `selfHeal: true`, and `syncOptions: [CreateNam
 ### Apps (`k8s/apps/`)
 - **`argocd/`** — ArgoCD user configurations, RBAC, HTTPRoute
 - **`backup-documents/`** — Kopia backup for UNAS documents (uses `packages/helm/kopia`)
-- **`backup-photos/`** — Kopia backup for UNAS photos (uses `packages/helm/kopia`)
-- **`beszel/`** — Beszel monitoring agent
+- **`beszel/`** — Beszel monitoring agent (`dashboard.colinbruner.com`)
 - **`cloudflared/`** — Cloudflare Tunnel connector (routes public traffic to Envoy Gateway)
-- **`garage/`** — Garage S3-compatible storage
-- **`ollama/`** — Ollama LLM deployment
 - **`sftp/`** — SFTP server
 
 ### Local Helm Charts (`packages/helm/`)

@@ -43,9 +43,8 @@ flowchart TD
 
     gw -->|":443 HTTPS\nTLS terminated (cert-manager Secrets)"| routes{"HTTPRoute\nhostname match"}
 
-    routes -->|argocd| argocd["argo-cd-argocd-server\nns: argocd :80"]
-    routes -->|beszel| beszel["beszel\nns: beszel"]
-    routes -->|"… other apps"| other["app Service → pods"]
+    routes -->|"argocd[-internal].colinbruner.com"| argocd["argo-cd-argocd-server\nns: argocd :80"]
+    routes -->|"dashboard[-internal].colinbruner.com"| beszel["beszel-hub\nns: beszel :443"]
 
     subgraph cluster["Kubernetes cluster"]
         cfd
@@ -55,7 +54,6 @@ flowchart TD
         routes
         argocd
         beszel
-        other
         pve
     end
 ```
@@ -91,8 +89,7 @@ flowchart TD
   have a stable DNS name.
 - **`shared-gateway`** (`ns: gateway`) — one Gateway with two listeners:
   - **`:80` HTTP** → `http-redirect` HTTPRoute issues a `301` to `https`.
-  - **`:443` HTTPS** → terminates TLS using per-domain Secrets
-    (`argocd-tls`, `grafana-tls`, `prometheus-tls`, `uptime-tls`, `n8n-tls`, `garage-tls`,
+  - **`:443` HTTPS** → terminates TLS using per-domain Secrets (`argocd-tls`,
     `dashboard-tls`) issued by cert-manager via the Let's Encrypt DNS-01 challenge.
 - **`HTTPRoute`s** live in each app's directory (e.g. `k8s/apps/argocd/`) and attach to the
   Gateway's `https` listener via `parentRefs`. They match on hostname (both the public and
@@ -100,9 +97,8 @@ flowchart TD
 
 ## Notes
 
-- The `cloudflared` app README describes an **Authentik `ext_authz` / `SecurityPolicy`**
-  authentication layer at the Gateway. That is **not present in the current manifests** —
-  no `SecurityPolicy` or Authentik resources exist in the repo. The diagram above shows the
-  flow as actually deployed. Treat the Authentik section of that README as a planned design.
-- Some HTTPS listener certificate refs (grafana, prometheus, n8n, garage, dashboard) exist
-  on the Gateway without a corresponding app in `k8s/apps/`, anticipating future services.
+- There is **no centralized forward-auth (ext_authz) layer** at the Gateway. Authentication
+  is per-app (e.g. ArgoCD uses its own RBAC).
+- Apps currently fronted by the Gateway: **argocd** (`argocd.colinbruner.com`) and **beszel**
+  (`dashboard.colinbruner.com`). The Gateway terminates TLS for exactly these two domains
+  (`argocd-tls`, `dashboard-tls`); add a Certificate + listener ref when exposing a new one.
