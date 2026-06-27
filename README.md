@@ -9,7 +9,45 @@ The repo is split into a **one-time bootstrap** and **GitOps-managed** resources
 1. `bootstrap/bootstrap.sh` creates the 1Password root secrets, installs ArgoCD, and applies two ApplicationSets.
 2. ArgoCD discovers `k8s/platform/*` (infrastructure, ordered by sync-wave) and `k8s/apps/*` (services) via git directory generators, creating one Application per directory.
 
-![Homelab Dependencies](./docs/assets/dependencies.png)
+```mermaid
+flowchart TD
+    %% Bootstrap — one-time, manual (NOT ArgoCD-managed)
+    subgraph bootstrap["bootstrap/ — one-time, manual (not ArgoCD-managed)"]
+        sh["bootstrap.sh"]
+        op_root["1Password root secrets<br/>op-credentials · op-connect-token"]
+        argocd_install["ArgoCD install<br/>bootstrap/argocd"]
+        root["GitOps root<br/>bootstrap/root"]
+        sh --> op_root & argocd_install & root
+    end
+
+    argocd_install --> argocd[["ArgoCD"]]
+    root --> platformset["platform ApplicationSet<br/>git generator: k8s/platform/*"]
+    root --> appsset["apps ApplicationSet<br/>git generator: k8s/apps/*"]
+    argocd -.->|reconciles| platformset
+    argocd -.->|reconciles| appsset
+
+    %% Platform — ArgoCD-managed, sync-wave ordered
+    subgraph platform["k8s/platform/ — ArgoCD-managed (applied in sync-wave order)"]
+        direction TB
+        p1["1password  (-30)<br/>Connect + operator · root of trust"]
+        p2["metallb  (-20)<br/>LoadBalancer IP allocation"]
+        p3["cert-manager  (-15)<br/>ClusterIssuers · LE DNS-01"]
+        p4["gateway  (-10)<br/>Envoy Gateway + shared Gateway"]
+        p5["crossplane  (-5)<br/>Cloudflare internal DNS"]
+        p6["csi-nfs  (-5)<br/>NFS CSI driver"]
+        p7["storage  (0)<br/>NFS PersistentVolumes"]
+    end
+
+    platformset --> p1 & p2 & p3 & p4 & p5 & p6 & p7
+    appsset --> apps["k8s/apps/* (services)"]
+
+    %% Cross-dependencies (what consumes what)
+    p1 -.->|Cloudflare API token| p3
+    p1 -.->|provider creds| p5
+    p2 -.->|LB IP| p4
+    p3 -.->|TLS certs| p4
+    p6 -.->|CSI driver| p7
+```
 
 For how requests reach services (public Cloudflare Tunnel and internal LAN paths), see [Ingress Traffic Flow](./docs/ingress-traffic-flow.md).
 
