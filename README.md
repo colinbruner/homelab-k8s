@@ -11,6 +11,8 @@ The repo is split into a **one-time bootstrap** and **GitOps-managed** resources
 
 ![Homelab Dependencies](./docs/assets/dependencies.png)
 
+For how requests reach services (public Cloudflare Tunnel and internal LAN paths), see [Ingress Traffic Flow](./docs/ingress-traffic-flow.md).
+
 ```
 bootstrap/                          # one-time, manual (NOT ArgoCD-managed)
   bootstrap.sh                      # single idempotent entrypoint
@@ -29,11 +31,8 @@ k8s/
   apps/                             # ArgoCD-managed services (wave >= 0)
     argocd/                         #   ArgoCD user config, RBAC, HTTPRoute
     backup-documents/               #   Kopia backup (UNAS documents)
-    backup-photos/                  #   Kopia backup (UNAS photos)
-    beszel/                         #   Beszel monitoring agent
+    beszel/                         #   Beszel monitoring (dashboard.colinbruner.com)
     cloudflared/                    #   Cloudflare Tunnel connector
-    garage/                         #   Garage S3-compatible storage
-    ollama/                         #   Ollama LLM deployment
     sftp/                           #   SFTP server
 packages/helm/                      # local Helm charts
   cloudflare/                       #   Crossplane DNS Request resources
@@ -55,9 +54,9 @@ packages/helm/                      # local Helm charts
 
 Apps sync at wave >= 0 after all platform components.
 
-### Monitoring (deferred)
+### Monitoring
 
-Monitoring (prometheus-operator, grafana-operator) has not yet been migrated to the new layout. The old manifests are retained in `k8s/archived/monitoring/` and will be migrated in a follow-up PR.
+Lightweight monitoring is provided by [Beszel](./k8s/apps/beszel/README.md), exposed at `dashboard.colinbruner.com`. The cluster does not currently run a Prometheus/Grafana stack.
 
 ## Bootstrapping
 
@@ -97,11 +96,8 @@ See [bootstrap/README.md](./bootstrap/README.md) for details on the root-of-trus
 |------------------|--------------------------------------------------|-------------------------------------------------------------|
 | argocd           | ArgoCD user config, RBAC, HTTPRoute              | [README](./k8s/apps/argocd/README.md)                      |
 | backup-documents | Kopia backup for UNAS documents                  | [README](./k8s/apps/backup-documents/README.md)            |
-| backup-photos    | Kopia backup for UNAS photos                     | [README](./k8s/apps/backup-photos/README.md)               |
-| beszel           | Beszel monitoring agent                          | [README](./k8s/apps/beszel/README.md)                      |
+| beszel           | Beszel monitoring agent (`dashboard.colinbruner.com`) | [README](./k8s/apps/beszel/README.md)                 |
 | cloudflared      | Cloudflare Tunnel connector                      | [README](./k8s/apps/cloudflared/README.md)                 |
-| garage           | Garage S3-compatible storage                     | [README](./k8s/apps/garage/README.md)                      |
-| ollama           | Ollama LLM deployment                            | [README](./k8s/apps/ollama/README.md)                      |
 | sftp             | SFTP server                                      | [README](./k8s/apps/sftp/README.md)                        |
 
 ### Local Helm Charts (`packages/helm/`)

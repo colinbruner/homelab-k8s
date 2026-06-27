@@ -17,8 +17,3 @@ resources:
   - http-redirect.yaml
   - certificates/argocd.yaml
   - certificates/dashboard.yaml
-  - certificates/garage.yaml
-  - certificates/grafana.yaml
-  - certificates/n8n.yaml
-  - certificates/prometheus.yaml
-  - certificates/uptime.yaml
