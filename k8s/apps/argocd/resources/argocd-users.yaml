@@ -12,6 +12,18 @@ data:
   accounts.crossplane: apiKey
   accounts.colin: login, apiKey
   kustomize.buildOptions: "--enable-helm"
+  # Ignore Gateway API CRD server-side defaults (group/kind/weight on refs)
+  # that otherwise cause permanent OutOfSync on HTTPRoute/Gateway resources.
+  resource.customizations.ignoreDifferences.gateway.networking.k8s.io_HTTPRoute: |
+    jqPathExpressions:
+      - .spec.parentRefs[]?.group
+      - .spec.parentRefs[]?.kind
+      - .spec.rules[]?.backendRefs[]?.group
+      - .spec.rules[]?.backendRefs[]?.kind
+      - .spec.rules[]?.backendRefs[]?.weight
+  resource.customizations.ignoreDifferences.gateway.networking.k8s.io_Gateway: |
+    jqPathExpressions:
+      - .spec.listeners[]?.tls.certificateRefs[]?.group
   oidc.config: |
     name: Pocket-ID
     issuer: https://auth.colinbruner.com
