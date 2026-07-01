@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: backup-{{ .Values.target.name }}
+  labels:
+    {{- include "kopia.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadOnlyMany
+  capacity:
+    storage: {{ .Values.nfs.backupCapacity }}
+  mountOptions:
+    - hard
+  nfs:
+    server: {{ .Values.nfs.server }}
+    path: {{ .Values.target.nfsPath }}
+  storageClassName: nfs
+  volumeMode: Filesystem

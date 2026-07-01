@@ -4,7 +4,7 @@ namespace: backup-documents
 helmGlobals:
   chartHome: ../../../packages/helm
 helmCharts:
-  - name: kopia
+  - name: kopia-legacy
     releaseName: backup
     namespace: backup-documents
     valuesFile: kopia-values.yaml
