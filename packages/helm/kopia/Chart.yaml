@@ -1,10 +1,12 @@
 apiVersion: v2
 name: kopia
 description: >
-  Parameterized Kopia GCS backup deployment for the homelab cluster.
-  Each target (documents, photos, etc.) provides its own values.yaml
-  specifying the NFS source path, GCS bucket, schedule, and Chronos
-  health-check configuration.
+  Multi-source, multi-repository Kopia backup for the homelab cluster.
+  Each entry in repositories[] renders one hardened TLS+authenticated
+  Kopia server (Deployment/Service/Certificate/config PVC/verify CronJob)
+  against one storage bucket (GCS or S3). Each entry in sources[] maps an
+  NFS share to a repository with its own schedule, retention, and Chronos
+  token. Snapshot scheduling runs inside the Kopia server.
 type: application
-version: 0.1.0
+version: 2.0.0
 appVersion: "0.23.1"

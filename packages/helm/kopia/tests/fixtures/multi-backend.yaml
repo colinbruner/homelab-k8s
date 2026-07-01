@@ -1,0 +1,62 @@
+repositories:
+  - name: primary
+    backend:
+      type: gcs
+      gcs:
+        bucket: gcs-bucket-a
+        credentialsSecret: gcp-credentials
+    identity:
+      username: root
+      hostname: kopia
+    passwordSecret:
+      name: backup
+      key: password
+  - name: media
+    backend:
+      type: s3
+      s3:
+        bucket: s3-bucket-b
+        endpoint: s3.us-east-1.amazonaws.com
+        region: us-east-1
+        credentialsSecret: aws-credentials
+    identity:
+      username: kopia
+      hostname: media
+    passwordSecret:
+      name: backup-media
+      key: password
+
+sources:
+  - name: documents
+    repository: primary
+    mountPath: /Volumes/Documents
+    nfsPath: /var/nfs/shared/Documents
+    schedule: "15 4 * * *"
+    retention:
+      latest: 3
+      daily: 14
+      weekly: 8
+      monthly: 12
+      annual: 2
+    chronos: true
+  - name: scans
+    repository: primary
+    mountPath: /data/scans
+    nfsPath: /var/nfs/shared/Scans
+    schedule: "45 4 * * *"
+    retention:
+      latest: 3
+      daily: 30
+      weekly: 8
+      monthly: 6
+    chronos: true
+  - name: media
+    repository: media
+    mountPath: /data/media
+    nfsPath: /var/nfs/shared/Media
+    schedule: "0 5 * * 0"
+    retention:
+      latest: 2
+      weekly: 4
+      monthly: 6
+    chronos: false

@@ -3,38 +3,100 @@ image:
   tag: "0.23.1"
   pullPolicy: IfNotPresent
 
-target:
-  name: ""               # e.g. "documents" — drives PV name backup-<name>, PVC volumeName, repo description
-  sourcePath: ""         # e.g. /Volumes/Documents — container mount path (mimics macOS path); also the kopia BACKUP_TARGET
-  nfsPath: ""            # e.g. /var/nfs/shared/Documents — PV nfs.path
-  schedule: "15 4 * * *" # kopia snapshot-time crontab
-  description: ""        # optional; defaults to "UNAS <Name> Backup" if empty
+timezone: America/Chicago
 
-storage:
-  gcsBucket: ""          # GCS bucket name
+# One Kopia repository server per entry (Deployment + Service + Certificate +
+# scripts ConfigMap + config PVC + verify CronJob). Sources reference a
+# repository by name; sources sharing a repository share deduplication.
+repositories: []
+# - name: primary
+#   backend:
+#     type: gcs                        # gcs | s3
+#     gcs:
+#       bucket: my-bucket
+#       credentialsSecret: gcp-credentials   # key: sa_json
+#     # s3:
+#     #   bucket: my-bucket
+#     #   endpoint: s3.us-east-1.amazonaws.com
+#     #   region: us-east-1                   # optional
+#     #   credentialsSecret: aws-credentials  # keys: access_key_id, secret_access_key
+#   identity:                          # stable user@host owning all sources + maintenance
+#     username: kopia
+#     hostname: backup
+#   passwordSecret:
+#     name: backup                     # repository password secret
+#     key: password
+#   cacheSizeMB: 5000
+#   configSize: 20Gi                   # nfs-csi PVC holding kopia config + cache
+
+# Backup sources. Each produces a static ReadOnlyMany NFS PV/PVC and a kopia
+# policy (schedule, retention, compression, chronos actions) applied at
+# bootstrap on the referenced repository's server. Retention is required;
+# omitted fields mean "keep none" — kopia's implicit defaults never apply.
+sources: []
+# - name: documents
+#   repository: primary
+#   mountPath: /Volumes/Documents
+#   nfsPath: /var/nfs/shared/Documents
+#   schedule: "15 4 * * *"
+#   retention:
+#     latest: 3
+#     hourly: 0
+#     daily: 14
+#     weekly: 8
+#     monthly: 12
+#     annual: 2
+#   chronos: true
+#   capacity: 1Ti                      # optional; defaults to nfs.defaultCapacity
+
+server:
+  port: 51515
+  uiUsername: kopia
+  controlUsername: server-control
 
 nfs:
   server: "192.168.10.5"
-  backupCapacity: "1Ti"  # PV capacity
-  backupRequest: "1000Gi"
-  configSize: "50Gi"     # dynamic config PVC (csi-nfs)
+  defaultCapacity: "1Ti"
+
+tls:
+  issuerRef:
+    name: selfsigned
+    kind: ClusterIssuer
+
+verify:
+  enabled: true
+  schedule: "30 6 1 * *"    # monthly, off-peak
+  filesPercent: 1
+  fileParallelism: 4
 
 chronos:
   enabled: true
   pingBase: "https://chronos.bruner.family/ping"
 
 secrets:
-  password:
-    name: backup         # OnePasswordItem-provided secret with key 'password'
+  server:
+    name: kopia-server      # keys: password, control-password
   chronos:
-    name: chronos        # secret with key 'token'
-  gcpCredentials:
-    name: gcp-credentials  # secret with key 'sa_json' mounted as credentials.json
+    name: chronos           # one key per source name + verify-<repository>
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65532
+  runAsGroup: 65532
+  fsGroup: 65532
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
 
 resources:
   requests:
     cpu: 100m
-    memory: 50Mi
+    memory: 256Mi
   limits:
     cpu: 1000m
     memory: 1Gi
