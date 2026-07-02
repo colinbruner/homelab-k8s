@@ -87,6 +87,12 @@ assert_contains "$out/single.yaml" 'value: "root"' "legacy identity override pre
 assert_contains "$out/single.yaml" "mountPath: /Volumes/Documents" "legacy source mount path preserved"
 assert_count "$out/multi.yaml" "mountPath: /data/media$" 1 "media source mounted only on its own repo server"
 assert_contains "$out/multi.yaml" "name: AWS_SECRET_ACCESS_KEY" "s3 credentials via env secretKeyRef"
+# Task 8: verify cronjob
+assert_contains "$out/single.yaml" "name: backup-primary-verify" "verify cronjob per repository"
+assert_contains "$out/single.yaml" "schedule: \"30 6 1 * *\"" "monthly off-peak schedule"
+assert_contains "$out/single.yaml" "key: verify-primary" "per-repo verify chronos token key"
+assert_contains "$out/single.yaml" 'value: "verify"' "distinct verify identity (not maintenance owner)"
+assert_count "$out/multi.yaml" "^kind: CronJob$" 2 "one verify job per repository"
 # ---- end assertions ----
 
 if command -v kubeconform > /dev/null 2>&1; then
