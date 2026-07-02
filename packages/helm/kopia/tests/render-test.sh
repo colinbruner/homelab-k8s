@@ -64,6 +64,11 @@ assert_count "$out/multi.yaml" "/data/media\|0 5" 1 "media source appears only i
 assert_contains "$out/single.yaml" "name: backup-actions" "shared actions configmap"
 assert_contains "$out/single.yaml" "/Volumes/Documents|documents" "sources.map entry"
 assert_contains "$out/single.yaml" "/app/chronos/" "token resolved from mounted secret dir"
+# Task 6: per-repository server certificate
+assert_contains "$out/single.yaml" "kind: Certificate" "cert-manager certificate rendered"
+assert_contains "$out/single.yaml" "secretName: backup-primary-tls" "tls secret name consumed by deployment"
+assert_contains "$out/single.yaml" "backup-primary.backup.svc.cluster.local" "service FQDN SAN"
+assert_count "$out/multi.yaml" "^kind: Certificate$" 2 "one certificate per repository"
 # ---- end assertions ----
 
 if command -v kubeconform > /dev/null 2>&1; then

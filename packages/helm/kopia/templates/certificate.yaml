@@ -1,0 +1,19 @@
+{{- range $repo := .Values.repositories }}
+{{- $ctx := dict "root" $ "repo" $repo }}
+{{- $name := include "kopia.repoFullname" $ctx }}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $name }}-tls
+  labels:
+    {{- include "kopia.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $repo.name }}
+spec:
+  secretName: {{ $name }}-tls
+  issuerRef:
+    {{- toYaml $.Values.tls.issuerRef | nindent 4 }}
+  dnsNames:
+    - {{ $name }}.{{ $.Release.Namespace }}.svc.cluster.local
+    - {{ $name }}.{{ $.Release.Namespace }}.svc
+{{- end }}

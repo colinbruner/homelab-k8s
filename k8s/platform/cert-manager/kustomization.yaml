@@ -12,4 +12,5 @@ resources:
   - namespace.yaml
   - letsencrypt-prod.yaml
   - letsencrypt-staging.yaml
+  - selfsigned.yaml
   - onepassword-cloudflare.yaml
