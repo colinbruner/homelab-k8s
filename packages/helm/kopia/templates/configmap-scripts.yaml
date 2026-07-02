@@ -1,0 +1,25 @@
+{{- range $repo := .Values.repositories }}
+{{- $ctx := dict "root" $ "repo" $repo }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "kopia.repoFullname" $ctx }}-scripts
+  labels:
+    {{- include "kopia.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $repo.name }}
+data:
+  repo-connect.sh: |
+{{ $.Files.Get "files/repo-connect.sh" | indent 4 }}
+  bootstrap.sh: |
+{{ $.Files.Get "files/bootstrap.sh" | indent 4 }}
+  verify.sh: |
+{{ $.Files.Get "files/verify.sh" | indent 4 }}
+  sources.conf: |
+    {{- range $src := $.Values.sources }}
+    {{- if eq $src.repository $repo.name }}
+    {{- $r := $src.retention }}
+    {{ $src.mountPath }}|{{ $src.schedule }}|{{ $r.latest | default 0 }}|{{ $r.hourly | default 0 }}|{{ $r.daily | default 0 }}|{{ $r.weekly | default 0 }}|{{ $r.monthly | default 0 }}|{{ $r.annual | default 0 }}|{{ $src.chronos | default false }}
+    {{- end }}
+    {{- end }}
+{{- end }}

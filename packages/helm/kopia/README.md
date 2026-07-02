@@ -1,42 +1,76 @@
-# kopia Helm Chart
+# kopia Helm Chart (v2)
 
-Parameterized Kopia GCS backup deployment. One `values.yaml` per backup
-target (documents, photos, etc.) drives a complete Kopia server instance
-that creates/connects a GCS repository, sets snapshot policies, and
-optionally reports health via Chronos action hooks.
+Multi-source, multi-repository Kopia backup. Each entry in `repositories[]`
+renders one hardened Kopia server (TLS + basic auth, Deployment/Service/
+Certificate/config PVC/verify CronJob) against one storage bucket. Each entry
+in `sources[]` maps an NFS share to a repository by name and gets its own
+ReadOnlyMany PV/PVC, cron schedule, explicit retention, and Chronos token.
+Snapshot scheduling runs inside the Kopia server (policy crontabs owned by
+the server's stable `user@host` identity) — the only k8s CronJob is the
+monthly `kopia snapshot verify`.
+
+## Adding a source
+
+Append to `sources[]` in the app overlay values (and add a matching key to
+the `chronos` secret / 1Password item). No new deployment is created unless
+you also add a repository.
+
+## Adding a repository (separate bucket / backend)
+
+Append to `repositories[]` with `backend.type: gcs` or `s3`, its own
+`identity` and `passwordSecret`; point sources at it via `repository:`.
 
 ## Values
 
 | Key | Default | Description |
 |-----|---------|-------------|
-| `image.repository` | `kopia/kopia` | Container image |
-| `image.tag` | `0.23.1` | Pinned image tag |
-| `target.name` | `""` | Target name (e.g. `documents`) -- drives PV/PVC names |
-| `target.sourcePath` | `""` | Container mount path for the NFS backup source |
-| `target.nfsPath` | `""` | NFS export path on the server |
-| `target.schedule` | `15 4 * * *` | Kopia snapshot crontab |
-| `target.description` | `""` | Repo description; defaults to `UNAS <Name> Backup` |
-| `storage.gcsBucket` | `""` | GCS bucket name |
+| `image.repository` / `image.tag` | `kopia/kopia` / `0.23.1` | Pinned image |
+| `timezone` | `America/Chicago` | TZ for server + jobs |
+| `repositories[].name` | — | Repository name; suffixes all per-repo resources |
+| `repositories[].backend.type` | — | `gcs` or `s3` |
+| `repositories[].backend.gcs.bucket` | — | GCS bucket |
+| `repositories[].backend.gcs.credentialsSecret` | — | Secret with key `sa_json` |
+| `repositories[].backend.s3.{bucket,endpoint,region}` | — | S3-compatible target (`region` optional) |
+| `repositories[].backend.s3.credentialsSecret` | — | Secret with keys `access_key_id`, `secret_access_key` |
+| `repositories[].identity.{username,hostname}` | — | Stable `user@host`; owns all sources + maintenance |
+| `repositories[].passwordSecret.{name,key}` | key: `password` | Repository password secret |
+| `repositories[].cacheSizeMB` | `5000` | Content + metadata cache size |
+| `repositories[].configSize` | `20Gi` | nfs-csi PVC for kopia config + cache |
+| `sources[].name` | — | Source name; PVC `src-<name>`, chronos secret key `<name>` |
+| `sources[].repository` | — | Name of the owning repository (validated at render) |
+| `sources[].mountPath` | — | In-pod path; also the kopia source path (lineage!) |
+| `sources[].nfsPath` | — | NFS export path |
+| `sources[].schedule` | — | `--snapshot-time-crontab` for the source policy |
+| `sources[].retention.{latest,hourly,daily,weekly,monthly,annual}` | required; omitted field = 0 | Explicit retention |
+| `sources[].chronos` | `false` | Attach chronos before/after root actions |
+| `sources[].capacity` | `nfs.defaultCapacity` | PV/PVC size |
+| `server.port` | `51515` | HTTPS port |
+| `server.uiUsername` / `server.controlUsername` | `kopia` / `server-control` | Basic-auth + control API users |
 | `nfs.server` | `192.168.10.5` | NFS server address |
-| `nfs.backupCapacity` | `1Ti` | Backup PV capacity |
-| `nfs.backupRequest` | `1000Gi` | Backup PVC request |
-| `nfs.configSize` | `50Gi` | Config PVC size (csi-nfs dynamic) |
-| `chronos.enabled` | `true` | Enable Chronos health-check action hooks |
-| `chronos.pingBase` | `https://chronos.bruner.family/ping` | Chronos ping base URL |
-| `secrets.password.name` | `backup` | Secret name for kopia password (key: `password`) |
-| `secrets.chronos.name` | `chronos` | Secret name for Chronos token (key: `token`) |
-| `secrets.gcpCredentials.name` | `gcp-credentials` | Secret name for GCP SA (key: `sa_json`) |
-| `resources` | `{requests: {cpu: 100m, memory: 50Mi}, limits: {cpu: 1000m, memory: 1Gi}}` | Pod resources |
+| `nfs.defaultCapacity` | `1Ti` | Default source PV capacity |
+| `tls.issuerRef` | `selfsigned` ClusterIssuer | cert-manager issuer for server certs |
+| `verify.{enabled,schedule,filesPercent,fileParallelism}` | `true`, `30 6 1 * *`, `1`, `4` | Monthly snapshot verification |
+| `chronos.{enabled,pingBase}` | `true`, chronos.bruner.family | Health-check pings |
+| `secrets.server.name` | `kopia-server` | Keys `password`, `control-password` |
+| `secrets.chronos.name` | `chronos` | One key per source name + `verify-<repository>` |
+| `podSecurityContext` / `containerSecurityContext` | non-root 65532, RO rootfs, no caps | Pod hardening (tune `runAsUser` to NFS export perms) |
+| `resources` | 100m/256Mi – 1/1Gi | Server + verify job resources |
 
-## External Secret Dependency: gcp-credentials
+## External secret dependencies (provided by the app overlay)
 
-This chart mounts a Kubernetes Secret named by `secrets.gcpCredentials.name`
-(default: `gcp-credentials`) with key `sa_json` containing a GCP service
-account JSON credential file. **This secret is NOT created by this chart.**
-It must already exist in the target namespace before the Helm release is
-installed.
+All are `OnePasswordItem`-materialized Secrets in the app namespace:
+`kopia-server` (UI/control credentials), per-repository password secrets,
+per-backend credential secrets (`gcp-credentials` key `sa_json`, or an S3
+secret with `access_key_id`/`secret_access_key`), and `chronos` (per-source
+token keys). The chart creates none of them.
 
-The secret is not defined in the old Kustomize base or overlays either --
-it is provisioned externally (e.g. via a OnePasswordItem or manual creation).
-Each app namespace overlay that consumes this chart must ensure the
-`gcp-credentials` secret exists.
+## UI access
+
+ClusterIP only. `kubectl -n backup port-forward svc/backup-primary 51515:51515`
+then https://localhost:51515 (self-signed cert; log in with `server.uiUsername`
+and the `kopia-server` secret's `password`).
+
+## Tests
+
+`bash tests/render-test.sh` — helm-template renders of `tests/fixtures/*`
+with grep assertions + kubeconform.

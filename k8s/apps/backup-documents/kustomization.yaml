@@ -4,10 +4,21 @@ namespace: backup-documents
 helmGlobals:
   chartHome: ../../../packages/helm
 helmCharts:
-  - name: kopia
+  - name: kopia-legacy
     releaseName: backup
     namespace: backup-documents
     valuesFile: kopia-values.yaml
 resources:
   - namespace.yaml
   - chronos.yaml
+patches:
+  # Cutover: freeze the legacy server at 0 replicas so it cannot run
+  # concurrent same-owner maintenance against the shared GCS repository
+  # while the new backup app takes over (see docs/kopia-cutover-runbook.md).
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: backup
+      spec:
+        replicas: 0

@@ -1,0 +1,68 @@
+{{- if .Values.verify.enabled }}
+{{- range $repo := .Values.repositories }}
+{{- $ctx := dict "root" $ "repo" $repo "usernameOverride" "verify" }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "kopia.repoFullname" $ctx }}-verify
+  labels:
+    {{- include "kopia.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $repo.name }}-verify
+spec:
+  schedule: {{ $.Values.verify.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: kopia
+            app.kubernetes.io/instance: {{ $.Release.Name }}
+            app.kubernetes.io/component: {{ $repo.name }}-verify
+        spec:
+          restartPolicy: Never
+          securityContext:
+            {{- toYaml $.Values.podSecurityContext | nindent 12 }}
+          containers:
+            - name: verify
+              image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
+              imagePullPolicy: {{ $.Values.image.pullPolicy }}
+              securityContext:
+                {{- toYaml $.Values.containerSecurityContext | nindent 16 }}
+              command: ["/bin/bash", "/app/scripts/verify.sh"]
+              env:
+                {{- include "kopia.repoEnv" $ctx | nindent 16 }}
+                - name: VERIFY_FILES_PERCENT
+                  value: {{ $.Values.verify.filesPercent | quote }}
+                - name: VERIFY_FILE_PARALLELISM
+                  value: {{ $.Values.verify.fileParallelism | quote }}
+                {{- if $.Values.chronos.enabled }}
+                - name: CHRONOS_PING_BASE
+                  value: {{ $.Values.chronos.pingBase | quote }}
+                - name: CHRONOS_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ $.Values.secrets.chronos.name }}
+                      key: verify-{{ $repo.name }}
+                      optional: true
+                {{- end }}
+              resources:
+                {{- toYaml $.Values.resources | nindent 16 }}
+              volumeMounts:
+                {{- include "kopia.repoStateMounts" $ctx | nindent 16 }}
+          volumes:
+            - name: state
+              emptyDir: {}
+            - name: tmp
+              emptyDir: {}
+            - name: scripts
+              configMap:
+                name: {{ include "kopia.repoFullname" $ctx }}-scripts
+                defaultMode: 0755
+            {{- include "kopia.backendVolumes" $ctx | nindent 12 }}
+{{- end }}
+{{- end }}

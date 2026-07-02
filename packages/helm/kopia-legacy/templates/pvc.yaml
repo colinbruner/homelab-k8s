@@ -1,0 +1,31 @@
+---
+# Dynamic config PVC (csi-nfs)
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: config
+  labels:
+    {{- include "kopia.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ .Values.nfs.configSize }}
+  storageClassName: nfs-csi
+---
+# Backup PVC — bound to the NFS PV for the target volume
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: backup
+  labels:
+    {{- include "kopia.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: {{ .Values.nfs.backupRequest }}
+  storageClassName: nfs
+  volumeName: backup-{{ .Values.target.name }}

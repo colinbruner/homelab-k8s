@@ -1,0 +1,23 @@
+repositories:
+  - name: primary
+    backend:
+      type: gcs
+      gcs:
+        bucket: test-bucket
+        credentialsSecret: gcp-credentials
+    identity:
+      username: root
+      hostname: kopia
+    passwordSecret:
+      name: backup
+      key: password
+
+sources:
+  - name: documents
+    repository: nonexistent
+    mountPath: /Volumes/Documents
+    nfsPath: /var/nfs/shared/Documents
+    schedule: "15 4 * * *"
+    retention:
+      latest: 3
+    chronos: false

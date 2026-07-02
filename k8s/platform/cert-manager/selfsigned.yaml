@@ -1,0 +1,9 @@
+---
+# Self-signed issuer for internal (*.svc.cluster.local) certificates that
+# public ACME issuers cannot sign. First consumer: kopia server TLS.
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned
+spec:
+  selfSigned: {}
