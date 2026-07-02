@@ -20,6 +20,11 @@ spec:
     metadata:
       labels:
         {{- include "kopia.repoSelectorLabels" $ctx | nindent 8 }}
+      annotations:
+        checksum/scripts: {{ include (print $.Template.BasePath "/configmap-scripts.yaml") $ | sha256sum }}
+        {{- if $.Values.chronos.enabled }}
+        checksum/actions: {{ include (print $.Template.BasePath "/configmap-actions.yaml") $ | sha256sum }}
+        {{- end }}
     spec:
       securityContext:
         {{- toYaml $.Values.podSecurityContext | nindent 8 }}

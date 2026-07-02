@@ -93,6 +93,9 @@ assert_contains "$out/single.yaml" "schedule: \"30 6 1 * *\"" "monthly off-peak 
 assert_contains "$out/single.yaml" "key: verify-primary" "per-repo verify chronos token key"
 assert_contains "$out/single.yaml" 'value: "verify"' "distinct verify identity (not maintenance owner)"
 assert_count "$out/multi.yaml" "^kind: CronJob$" 2 "one verify job per repository"
+# Final review fix: configmap changes must roll the server deployment
+assert_contains "$out/single.yaml" "checksum/scripts:" "scripts checksum annotation rolls deployment on policy change"
+assert_contains "$out/single.yaml" "checksum/actions:" "actions checksum annotation present when chronos enabled"
 # ---- end assertions ----
 
 if command -v kubeconform > /dev/null 2>&1; then

@@ -18,9 +18,12 @@ one is `k8s/apps/backup-documents/` (frozen chart `packages/helm/kopia-legacy`).
 
 ## Phase 3 — cutover
 
-1. Scale the old server to 0 (avoid duplicate snapshots/pings; two clients on
-   one repo is safe, duplicate schedules are not):
-   `kubectl -n backup-documents scale deploy/backup --replicas=0`
+1. The old server is scaled to 0 **by git**: this branch pins the legacy
+   Deployment to `replicas: 0` via a kustomize patch in
+   `k8s/apps/backup-documents/kustomization.yaml` (a manual `kubectl scale`
+   would be reverted by ArgoCD selfHeal). Merging is the scale-down; to
+   roll back, revert the merge (or delete the patch) and ArgoCD restores
+   the old server.
 2. Merge the branch. ArgoCD creates the `backup` app.
 3. Watch: `kubectl -n backup get pods -w` — `bootstrap` initContainer must
    connect (NOT create) the repository, then the server goes Ready.
@@ -57,7 +60,11 @@ one is `k8s/apps/backup-documents/` (frozen chart `packages/helm/kopia-legacy`).
 3. A new bucket/backend instead? Append a `repositories:` entry (own
    `identity`, `passwordSecret`, backend credentials secret in
    `onepassword-items.yaml`) and point the source's `repository:` at it.
-4. Push; ArgoCD syncs. Verify the new policy:
+4. After ArgoCD syncs, take the FIRST snapshot manually — Kopia's server
+   scheduler only schedules sources that already have at least one
+   snapshot; a policy alone never fires:
+   `kubectl -n backup exec deploy/backup-<repo> -c server -- kopia snapshot create /data/<name>`
+5. Verify the new policy and snapshot:
    `kubectl -n backup exec deploy/backup-primary -c server -- kopia policy list`
 
 ## Storage-side hardening (follow-up, outside this repo)
