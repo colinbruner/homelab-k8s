@@ -52,6 +52,14 @@ assert_contains "$out/single.yaml" "name: config-primary" "per-repository config
 assert_contains "$out/single.yaml" "storageClassName: nfs-csi" "config PVC uses dynamic nfs-csi"
 assert_count "$out/multi.yaml" "^kind: PersistentVolume$" 3 "one PV per source"
 assert_count "$out/multi.yaml" "^kind: PersistentVolumeClaim$" 5 "3 source PVCs + 2 config PVCs"
+# Task 4: scripts configmap + sources.conf
+assert_contains "$out/single.yaml" "name: backup-primary-scripts" "per-repo scripts configmap"
+assert_contains "$out/single.yaml" "/Volumes/Documents|15 4 * * *|3|0|14|8|12|2|true" "documents sources.conf line (explicit retention)"
+assert_contains "$out/single.yaml" "repo_connect_or_create" "bootstrap uses connect-first"
+assert_contains "$out/single.yaml" "kopia maintenance set" "maintenance ownership pinned"
+assert_contains "$out/multi.yaml" "/data/media|0 5 * * 0|2|0|0|4|6|0|false" "media sources.conf line (omitted retention -> 0)"
+assert_count "$out/multi.yaml" "^  sources.conf: " 2 "one sources.conf per repository"
+assert_count "$out/multi.yaml" "/data/media\|0 5" 1 "media source appears only in its own repository's conf"
 # ---- end assertions ----
 
 if command -v kubeconform > /dev/null 2>&1; then
