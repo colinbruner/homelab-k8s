@@ -1,0 +1,27 @@
+repositories:
+  - name: primary
+    backend:
+      type: gcs
+      gcs:
+        bucket: backup-unas-vol-documents-9851   # existing repo, history preserved in place
+        credentialsSecret: gcp-credentials
+    identity:
+      username: root    # legacy identity — keeps snapshot lineage (spec §6.1)
+      hostname: kopia
+    passwordSecret:
+      name: backup
+      key: password
+
+sources:
+  - name: documents
+    repository: primary
+    mountPath: /Volumes/Documents   # legacy path — keeps snapshot lineage
+    nfsPath: /var/nfs/shared/Documents
+    schedule: "15 4 * * *"
+    retention:
+      latest: 3
+      daily: 14
+      weekly: 8
+      monthly: 12
+      annual: 2
+    chronos: true
