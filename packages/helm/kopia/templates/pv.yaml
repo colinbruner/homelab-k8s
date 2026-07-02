@@ -1,0 +1,24 @@
+{{- range $src := .Values.sources }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  # Namespaced prefix: PVs are cluster-scoped and the legacy chart owns backup-<name>.
+  name: {{ $.Release.Namespace }}-src-{{ $src.name }}
+  labels:
+    {{- include "kopia.labels" $ | nindent 4 }}
+spec:
+  accessModes:
+    - ReadOnlyMany
+  capacity:
+    storage: {{ $src.capacity | default $.Values.nfs.defaultCapacity }}
+  mountOptions:
+    - hard
+    - ro
+  nfs:
+    server: {{ $.Values.nfs.server }}
+    path: {{ $src.nfsPath }}
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs
+  volumeMode: Filesystem
+{{- end }}

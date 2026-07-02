@@ -1,0 +1,35 @@
+{{- range $repo := .Values.repositories }}
+---
+# Kopia config + cache for the {{ $repo.name }} server (survives restarts)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: config-{{ $repo.name }}
+  labels:
+    {{- include "kopia.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $repo.name }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ $repo.configSize | default "20Gi" }}
+  storageClassName: nfs-csi
+{{- end }}
+{{- range $src := .Values.sources }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: src-{{ $src.name }}
+  labels:
+    {{- include "kopia.labels" $ | nindent 4 }}
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: {{ $src.capacity | default $.Values.nfs.defaultCapacity }}
+  storageClassName: nfs
+  volumeName: {{ $.Release.Namespace }}-src-{{ $src.name }}
+{{- end }}

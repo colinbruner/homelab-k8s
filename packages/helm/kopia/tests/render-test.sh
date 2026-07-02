@@ -44,6 +44,14 @@ if helm template backup . --namespace backup \
 fi
 
 # ---- assertions ----
+# Task 3: per-source PVs/PVCs + per-repo config PVCs
+assert_contains "$out/single.yaml" "name: backup-src-documents" "namespaced source PV name (avoids legacy backup-documents PV collision)"
+assert_contains "$out/single.yaml" "path: /var/nfs/shared/Documents" "source PV nfs path"
+assert_contains "$out/single.yaml" "volumeName: backup-src-documents" "source PVC pinned to its PV"
+assert_contains "$out/single.yaml" "name: config-primary" "per-repository config PVC"
+assert_contains "$out/single.yaml" "storageClassName: nfs-csi" "config PVC uses dynamic nfs-csi"
+assert_count "$out/multi.yaml" "^kind: PersistentVolume$" 3 "one PV per source"
+assert_count "$out/multi.yaml" "^kind: PersistentVolumeClaim$" 5 "3 source PVCs + 2 config PVCs"
 # ---- end assertions ----
 
 if command -v kubeconform > /dev/null 2>&1; then
