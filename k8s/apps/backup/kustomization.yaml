@@ -10,4 +10,4 @@ helmCharts:
     valuesFile: kopia-values.yaml
 resources:
   - namespace.yaml
-  - secrets.yaml
+  - onepassword-items.yaml
