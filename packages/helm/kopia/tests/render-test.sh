@@ -60,6 +60,10 @@ assert_contains "$out/single.yaml" "kopia maintenance set" "maintenance ownershi
 assert_contains "$out/multi.yaml" "/data/media|0 5 * * 0|2|0|0|4|6|0|false" "media sources.conf line (omitted retention -> 0)"
 assert_count "$out/multi.yaml" "^  sources.conf: " 2 "one sources.conf per repository"
 assert_count "$out/multi.yaml" "/data/media\|0 5" 1 "media source appears only in its own repository's conf"
+# Task 5: chronos actions + sources.map
+assert_contains "$out/single.yaml" "name: backup-actions" "shared actions configmap"
+assert_contains "$out/single.yaml" "/Volumes/Documents|documents" "sources.map entry"
+assert_contains "$out/single.yaml" "/app/chronos/" "token resolved from mounted secret dir"
 # ---- end assertions ----
 
 if command -v kubeconform > /dev/null 2>&1; then
