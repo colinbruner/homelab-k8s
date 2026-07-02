@@ -69,6 +69,24 @@ assert_contains "$out/single.yaml" "kind: Certificate" "cert-manager certificate
 assert_contains "$out/single.yaml" "secretName: backup-primary-tls" "tls secret name consumed by deployment"
 assert_contains "$out/single.yaml" "backup-primary.backup.svc.cluster.local" "service FQDN SAN"
 assert_count "$out/multi.yaml" "^kind: Certificate$" 2 "one certificate per repository"
+# Task 7: hardened server deployment + service
+assert_count "$out/single.yaml" "^kind: Deployment$" 1 "single repo -> single deployment"
+assert_count "$out/multi.yaml" "^kind: Deployment$" 2 "one server deployment per repository"
+assert_count "$out/multi.yaml" "^kind: Service$" 2 "one service per repository"
+assert_not_contains "$out/single.yaml" "allow-extremely-dangerous-unauthenticated-server-on-the-network" "dangerous flag removed"
+assert_not_contains "$out/single.yaml" "--insecure" "insecure flag removed"
+assert_not_contains "$out/single.yaml" "--without-password" "without-password flag removed"
+assert_not_contains "$out/single.yaml" "envFrom" "no wholesale secret env dump"
+assert_contains "$out/single.yaml" "--tls-cert-file=/tls/tls.crt" "server TLS enabled"
+assert_contains "$out/single.yaml" "containerPort: 51515" "kopia default HTTPS port"
+assert_contains "$out/single.yaml" "runAsNonRoot: true" "non-root pod"
+assert_contains "$out/single.yaml" "readOnlyRootFilesystem: true" "read-only root fs"
+assert_contains "$out/single.yaml" "KOPIA_SERVER_CONTROL_PASSWORD" "control API password from secret"
+assert_contains "$out/single.yaml" "tcpSocket" "tcp probes (kopia basic-auth 401 breaks httpGet)"
+assert_contains "$out/single.yaml" 'value: "root"' "legacy identity override preserved"
+assert_contains "$out/single.yaml" "mountPath: /Volumes/Documents" "legacy source mount path preserved"
+assert_count "$out/multi.yaml" "mountPath: /data/media$" 1 "media source mounted only on its own repo server"
+assert_contains "$out/multi.yaml" "name: AWS_SECRET_ACCESS_KEY" "s3 credentials via env secretKeyRef"
 # ---- end assertions ----
 
 if command -v kubeconform > /dev/null 2>&1; then

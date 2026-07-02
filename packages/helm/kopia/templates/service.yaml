@@ -1,0 +1,19 @@
+{{- range $repo := .Values.repositories }}
+{{- $ctx := dict "root" $ "repo" $repo }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "kopia.repoFullname" $ctx }}
+  labels:
+    {{- include "kopia.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $repo.name }}
+spec:
+  selector:
+    {{- include "kopia.repoSelectorLabels" $ctx | nindent 4 }}
+  ports:
+    - name: https
+      protocol: TCP
+      port: {{ $.Values.server.port }}
+      targetPort: {{ $.Values.server.port }}
+{{- end }}

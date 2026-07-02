@@ -1,0 +1,136 @@
+{{- range $repo := .Values.repositories }}
+{{- $ctx := dict "root" $ "repo" $repo }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "kopia.repoFullname" $ctx }}
+  labels:
+    {{- include "kopia.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $repo.name }}
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "kopia.repoSelectorLabels" $ctx | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "kopia.repoSelectorLabels" $ctx | nindent 8 }}
+    spec:
+      securityContext:
+        {{- toYaml $.Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: bootstrap
+          image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml $.Values.containerSecurityContext | nindent 12 }}
+          command: ["/bin/bash", "/app/scripts/bootstrap.sh"]
+          env:
+            {{- include "kopia.repoEnv" $ctx | nindent 12 }}
+          volumeMounts:
+            {{- include "kopia.repoStateMounts" $ctx | nindent 12 }}
+      containers:
+        - name: server
+          image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml $.Values.containerSecurityContext | nindent 12 }}
+          command:
+            - /bin/bash
+            - -c
+            - |-
+              exec kopia server start \
+                --address=0.0.0.0:{{ $.Values.server.port }} \
+                --tls-cert-file=/tls/tls.crt \
+                --tls-key-file=/tls/tls.key \
+                --server-username={{ $.Values.server.uiUsername }} \
+                --server-control-username={{ $.Values.server.controlUsername }} \
+                --enable-actions
+          ports:
+            - name: https
+              containerPort: {{ $.Values.server.port }}
+              protocol: TCP
+          readinessProbe:
+            tcpSocket:
+              port: https
+            initialDelaySeconds: 15
+            periodSeconds: 15
+          livenessProbe:
+            tcpSocket:
+              port: https
+            initialDelaySeconds: 120
+            periodSeconds: 60
+          resources:
+            {{- toYaml $.Values.resources | nindent 12 }}
+          env:
+            {{- include "kopia.repoEnv" $ctx | nindent 12 }}
+            - name: KOPIA_SERVER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.secrets.server.name }}
+                  key: password
+            - name: KOPIA_SERVER_CONTROL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.secrets.server.name }}
+                  key: control-password
+            {{- if $.Values.chronos.enabled }}
+            - name: CHRONOS_PING_BASE
+              value: {{ $.Values.chronos.pingBase | quote }}
+            {{- end }}
+          volumeMounts:
+            {{- include "kopia.repoStateMounts" $ctx | nindent 12 }}
+            - name: tls
+              mountPath: /tls
+              readOnly: true
+            {{- if $.Values.chronos.enabled }}
+            - name: actions
+              mountPath: /app/actions
+              readOnly: true
+            - name: chronos
+              mountPath: /app/chronos
+              readOnly: true
+            {{- end }}
+            {{- range $src := $.Values.sources }}
+            {{- if eq $src.repository $repo.name }}
+            - name: src-{{ $src.name }}
+              mountPath: {{ $src.mountPath }}
+              readOnly: true
+            {{- end }}
+            {{- end }}
+      volumes:
+        - name: state
+          persistentVolumeClaim:
+            claimName: config-{{ $repo.name }}
+        - name: tmp
+          emptyDir: {}
+        - name: scripts
+          configMap:
+            name: {{ include "kopia.repoFullname" $ctx }}-scripts
+            defaultMode: 0755
+        - name: tls
+          secret:
+            secretName: {{ include "kopia.repoFullname" $ctx }}-tls
+        {{- if $.Values.chronos.enabled }}
+        - name: actions
+          configMap:
+            name: {{ $.Release.Name }}-actions
+            defaultMode: 0755
+        - name: chronos
+          secret:
+            secretName: {{ $.Values.secrets.chronos.name }}
+        {{- end }}
+        {{- include "kopia.backendVolumes" $ctx | nindent 8 }}
+        {{- range $src := $.Values.sources }}
+        {{- if eq $src.repository $repo.name }}
+        - name: src-{{ $src.name }}
+          persistentVolumeClaim:
+            claimName: src-{{ $src.name }}
+        {{- end }}
+        {{- end }}
+{{- end }}
