@@ -95,13 +95,15 @@ Both use `automated.prune: true`, `selfHeal: true`, and `syncOptions: [CreateNam
 
 ### Apps (`k8s/apps/`)
 - **`argocd/`** — ArgoCD user configurations, RBAC, HTTPRoute
-- **`backup-documents/`** — Kopia backup for UNAS documents (uses `packages/helm/kopia`)
+- **`backup/`** — Kopia backup server: single hardened server per repository, multi-source (uses `packages/helm/kopia`)
+- **`backup-documents/`** — Legacy Kopia deployment (frozen `packages/helm/kopia-legacy`; delete after cutover — see `docs/kopia-cutover-runbook.md`)
 - **`beszel/`** — Beszel monitoring agent (`dashboard.colinbruner.com`)
 - **`cloudflared/`** — Cloudflare Tunnel connector (routes public traffic to Envoy Gateway)
 - **`sftp/`** — SFTP server
 
 ### Local Helm Charts (`packages/helm/`)
-- **`kopia/`** — Parameterized Kopia backup chart. Each backup target is a single `kopia-values.yaml` in its app overlay.
+- **`kopia/`** — Multi-source/multi-repository Kopia backup chart. `repositories[]` (one TLS+auth server per bucket, GCS or S3) × `sources[]` (per-source NFS PV, schedule, retention, Chronos token), all in one `kopia-values.yaml`.
+- **`kopia-legacy/`** — Frozen pre-refactor chart; only `k8s/apps/backup-documents` uses it (deleted at cutover).
 - **`postgres/`** — Single-instance PostgreSQL StatefulSet, NFS-compatible.
 
 ### Gateway API / Ingress
