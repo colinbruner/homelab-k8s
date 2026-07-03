@@ -27,6 +27,7 @@ repo_args() {
     --cache-directory=/app/cache
     --content-cache-size-mb="$KOPIA_CACHE_SIZE_MB"
     --metadata-cache-size-mb="$KOPIA_CACHE_SIZE_MB"
+    --enable-actions
   )
 }
 
