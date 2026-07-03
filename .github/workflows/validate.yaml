@@ -119,6 +119,41 @@ jobs:
 
           exit "$status"
 
+  helm-test:
+    name: Helm Chart Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Install kubeconform
+        run: |
+          curl -fsSL https://github.com/yannh/kubeconform/releases/download/v0.8.0/kubeconform-linux-amd64.tar.gz \
+            | tar xz -C /usr/local/bin kubeconform
+
+      - name: Run chart render tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=0
+          found=0
+
+          for t in packages/helm/*/tests/render-test.sh; do
+            [ -e "$t" ] || continue
+            found=1
+            echo "::group::$t"
+            bash "$t" || status=1
+            echo "::endgroup::"
+          done
+
+          if [ "$found" -eq 0 ]; then
+            echo "No chart render tests found under packages/helm/*/tests"
+          fi
+
+          exit "$status"
+
   lint:
     name: Lint
     runs-on: ubuntu-latest
