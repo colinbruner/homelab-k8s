@@ -4,6 +4,10 @@ Manual steps for spec Phase 2 prep, Phase 3 cutover, and Phase 4 expansion.
 The new app is `k8s/apps/backup/` (chart `packages/helm/kopia` v2); the old
 one is `k8s/apps/backup-documents/` (frozen chart `packages/helm/kopia-legacy`).
 
+Recurring commands below are codified as `make` targets in the repo-root
+`Makefile` (`make help` lists them; `NS`/`REPO` variables default to
+`backup`/`primary`). One-time cutover and cleanup steps stay manual.
+
 ## Phase 2 prep — BEFORE merging the branch
 
 1. In Chronos, create ping monitors: one per source (`documents`) and one for
@@ -32,14 +36,14 @@ one is `k8s/apps/backup-documents/` (frozen chart `packages/helm/kopia-legacy`).
    UNAS export permissions (last resort: runAsUser 0 + runAsNonRoot false —
    revisit export squash settings instead).
 4. Verify lineage and schedule:
-   - `kubectl -n backup exec deploy/backup-primary -c server -- kopia snapshot list --all`
+   - `make kopia-snapshots`
      → historical `root@kopia:/Volumes/Documents` snapshots present.
-   - `kubectl -n backup exec deploy/backup-primary -c server -- kopia maintenance info`
+   - `make kopia-maintenance`
      → owner `root@kopia`, quick+full enabled.
    - Next 04:15 snapshot fires; Chronos `documents` monitor pings start+success.
-   - Run the verify job once: `kubectl -n backup create job --from=cronjob/backup-primary-verify verify-manual`
-5. UI check: `kubectl -n backup port-forward svc/backup-primary 51515:51515`,
-   log in with `kopia` / `Kopia Server`.`password`.
+   - Run the verify job once: `make kopia-verify`
+5. UI check: `make kopia-ui`, then log in at https://localhost:51515 with
+   `kopia` / `Kopia Server`.`password`.
 
 ## Phase 3 — cleanup (after ≥1 successful scheduled snapshot)
 
@@ -63,9 +67,10 @@ one is `k8s/apps/backup-documents/` (frozen chart `packages/helm/kopia-legacy`).
 4. After ArgoCD syncs, take the FIRST snapshot manually — Kopia's server
    scheduler only schedules sources that already have at least one
    snapshot; a policy alone never fires:
-   `kubectl -n backup exec deploy/backup-<repo> -c server -- kopia snapshot create /data/<name>`
+   `make kopia-first-snapshot SRC=/data/<name>` (add `REPO=<repo>` if not
+   `primary`)
 5. Verify the new policy and snapshot:
-   `kubectl -n backup exec deploy/backup-primary -c server -- kopia policy list`
+   `make kopia-policies` (and `make kopia-snapshots`)
 
 ## Storage-side hardening (follow-up, outside this repo)
 
