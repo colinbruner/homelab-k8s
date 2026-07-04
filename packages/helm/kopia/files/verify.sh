@@ -15,6 +15,11 @@ kopia snapshot verify \
   --file-parallelism="${VERIFY_FILE_PARALLELISM}"
 
 if [[ -n "${CHRONOS_TOKEN:-}" ]]; then
-  curl -fsS -m 10 "${CHRONOS_PING_BASE}/${CHRONOS_TOKEN}" > /dev/null || true
+  chronos_response=$(curl -fsS -m 10 "${CHRONOS_PING_BASE}/${CHRONOS_TOKEN}") || chronos_response=""
+  if [[ "${chronos_response}" == *OK* ]]; then
+    echo "[INFO] Chronos ping succeeded (response: ${chronos_response})"
+  else
+    echo "[WARN] Chronos ping failed or did not return OK (response: ${chronos_response:-<empty>})"
+  fi
 fi
 echo "[INFO] verification complete"
