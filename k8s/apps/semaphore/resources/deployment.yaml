@@ -18,6 +18,10 @@ spec:
         app: semaphore
     spec:
       automountServiceAccountToken: false
+      # The Service is named "semaphore", so legacy service links would inject
+      # SEMAPHORE_PORT=tcp://<clusterIP>:3000, which Semaphore parses as its
+      # config port and panics on.
+      enableServiceLinks: false
       securityContext:
         runAsUser: 1001
         runAsNonRoot: true
