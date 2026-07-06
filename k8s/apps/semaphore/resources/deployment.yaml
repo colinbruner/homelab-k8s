@@ -8,7 +8,7 @@ metadata:
 spec:
   replicas: 1
   strategy:
-    type: Recreate # BoltDB is single-writer; never run two pods against the PVC
+    type: Recreate # SQLite is single-writer; never run two pods against the PVC
   selector:
     matchLabels:
       app: semaphore
@@ -38,8 +38,13 @@ spec:
           containerPort: 3000
           protocol: TCP
         env:
+        # bolt is deprecated and panics at server start in v2.18.20
+        # ("unknown store type" in the pro Terraform store); sqlite is
+        # its designated replacement.
         - name: SEMAPHORE_DB_DIALECT
-          value: bolt
+          value: sqlite
+        - name: SEMAPHORE_DB_HOST
+          value: /var/lib/semaphore/database.sqlite
         - name: SEMAPHORE_WEB_ROOT
           value: https://semaphore.colinbruner.com
         - name: SEMAPHORE_ADMIN

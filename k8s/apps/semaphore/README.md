@@ -5,8 +5,9 @@ Ansible playbooks on a schedule (weekly `site.yml` apply, Sun 04:00).
 
 - **Canonical runbook**: `docs/semaphore.md` in homelab-automation — read it
   before changing schedules or templates. Ops playbooks are never scheduled.
-- **State**: BoltDB on the `semaphore-data` PVC (`nfs-csi-buckets`). Single
-  replica, `Recreate` strategy — BoltDB is single-writer.
+- **State**: SQLite on the `semaphore-data` PVC (`nfs-csi-buckets`). Single
+  replica, `Recreate` strategy — SQLite is single-writer. (BoltDB is
+  deprecated and panics at server start in v2.18.20.)
 - **Secrets**: `OnePasswordItem` -> Secret `semaphore`
   (`op://lab/semaphore`). The pod's `OP_CONNECT_TOKEN` is read-only on the
   `lab` vault; playbook runs inherit `OP_CONNECT_HOST`/`OP_CONNECT_TOKEN` for
