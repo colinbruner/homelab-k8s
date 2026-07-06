@@ -117,7 +117,7 @@ trash /private/tmp/claude-501/-Users-colinbruner-code-colinbruner-homelab-k8s/87
 - [ ] **Step 5: Verify the target-host SSH key exists**
 
 ```bash
-op read "op://lab/semaphore-ssh/private-key" > /dev/null && echo OK
+op read "op://lab/semaphore-ssh/private key" > /dev/null && echo OK
 ```
 
 The runbook says this key already exists (its pubkey is distributed by the `lab_user` role). If missing, coordinate with the homelab-automation session before continuing — do not invent a key here.
@@ -538,10 +538,10 @@ All in the Semaphore UI. The runbook table in `docs/semaphore.md` is authoritati
 **Files:** none
 
 **Interfaces:**
-- Consumes: `op://lab/semaphore-ssh/private-key` (target hosts), `op://lab/semaphore-github-deploy/private-key` (repo clone), pod env `OP_CONNECT_HOST`/`OP_CONNECT_TOKEN`.
+- Consumes: `op://lab/semaphore-ssh/private key` (target hosts), `op://lab/semaphore-github-deploy/private-key` (repo clone), pod env `OP_CONNECT_HOST`/`OP_CONNECT_TOKEN`.
 - Produces: a scheduled weekly apply of `site.yml`; manual templates for everything else.
 
-- [ ] **Step 1: Key Store** — add SSH key `semaphore` (paste `op read "op://lab/semaphore-ssh/private-key"`) and SSH key `github-deploy` (paste `op read "op://lab/semaphore-github-deploy/private-key"`).
+- [ ] **Step 1: Key Store** — add SSH key `semaphore` (paste `op read "op://lab/semaphore-ssh/private key"`) and SSH key `github-deploy` (paste `op read "op://lab/semaphore-github-deploy/private-key"`).
 
 - [ ] **Step 2: Repository** — `git@github.com:colinbruner/homelab-automation.git`, branch `main`, auth `github-deploy`. Set the project's playbook path so tasks run from `ansible/` (Semaphore auto-installs `requirements.yml` collections).
 
