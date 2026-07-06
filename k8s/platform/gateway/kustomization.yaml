@@ -17,3 +17,4 @@ resources:
   - http-redirect.yaml
   - certificates/argocd.yaml
   - certificates/dashboard.yaml
+  - certificates/semaphore.yaml

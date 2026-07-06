@@ -27,6 +27,8 @@ spec:
         name: argocd-tls
       - kind: Secret
         name: dashboard-tls
+      - kind: Secret
+        name: semaphore-tls
     allowedRoutes:
       namespaces:
         from: All

@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: semaphore-tls
+  namespace: gateway
+spec:
+  secretName: semaphore-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - semaphore.colinbruner.com
+  - semaphore-internal.colinbruner.com
