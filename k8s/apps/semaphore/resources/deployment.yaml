@@ -17,11 +17,18 @@ spec:
       labels:
         app: semaphore
     spec:
+      automountServiceAccountToken: false
       securityContext:
+        runAsUser: 1001
+        runAsNonRoot: true
         fsGroup: 1001
       containers:
       - name: semaphore
         image: semaphoreui/semaphore:v2.18.20
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
         ports:
         - name: web
           containerPort: 3000
