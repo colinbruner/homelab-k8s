@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: semaphore
+  namespace: semaphore
+  labels:
+    app: semaphore
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate # BoltDB is single-writer; never run two pods against the PVC
+  selector:
+    matchLabels:
+      app: semaphore
+  template:
+    metadata:
+      labels:
+        app: semaphore
+    spec:
+      securityContext:
+        fsGroup: 1001
+      containers:
+      - name: semaphore
+        image: semaphoreui/semaphore:v2.18.20
+        ports:
+        - name: web
+          containerPort: 3000
+          protocol: TCP
+        env:
+        - name: SEMAPHORE_DB_DIALECT
+          value: bolt
+        - name: SEMAPHORE_WEB_ROOT
+          value: https://semaphore.colinbruner.com
+        - name: SEMAPHORE_ADMIN
+          value: admin
+        - name: SEMAPHORE_ADMIN_NAME
+          value: Colin
+        - name: SEMAPHORE_ADMIN_EMAIL
+          value: admin@colinbruner.com
+        - name: SEMAPHORE_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: semaphore
+              key: admin-password
+        - name: SEMAPHORE_ACCESS_KEY_ENCRYPTION
+          valueFrom:
+            secretKeyRef:
+              name: semaphore
+              key: access-key-encryption
+        # Inherited by playbook runs so community.general.onepassword
+        # lookups in group_vars/ resolve against in-cluster Connect.
+        - name: OP_CONNECT_HOST
+          value: http://onepassword-connect.1password.svc.cluster.local:8080
+        - name: OP_CONNECT_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: semaphore
+              key: connect-token
+        - name: SEMAPHORE_OIDC_PROVIDERS
+          value: >-
+            {"pocket-id": {"display_name": "Pocket ID",
+            "provider_url": "https://auth.colinbruner.com",
+            "client_id_file": "/etc/semaphore/oidc/client-id",
+            "client_secret_file": "/etc/semaphore/oidc/client-secret",
+            "redirect_url": "https://semaphore.colinbruner.com/api/auth/oidc/pocket-id/redirect",
+            "scopes": ["openid", "profile", "email"],
+            "username_claim": "preferred_username",
+            "email_claim": "email",
+            "name_claim": "name"}}
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            memory: 1Gi
+        livenessProbe:
+          httpGet:
+            path: /api/ping
+            port: web
+          initialDelaySeconds: 15
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /api/ping
+            port: web
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/semaphore
+        - name: oidc
+          mountPath: /etc/semaphore/oidc
+          readOnly: true
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: semaphore-data
+      - name: oidc
+        secret:
+          secretName: semaphore
+          items:
+          - key: oidc-client-id
+            path: client-id
+          - key: oidc-client-secret
+            path: client-secret

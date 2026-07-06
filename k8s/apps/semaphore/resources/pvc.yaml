@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: semaphore-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: nfs-csi-buckets
+  resources:
+    requests:
+      storage: 2Gi
