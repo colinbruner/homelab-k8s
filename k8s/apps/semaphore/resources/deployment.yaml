@@ -26,6 +26,20 @@ spec:
         runAsUser: 1001
         runAsNonRoot: true
         fsGroup: 1001
+      initContainers:
+      # community.general.onepassword lookups run on the Ansible controller
+      # (this pod), even in Connect mode, and shell out to the op CLI. The
+      # official semaphoreui/semaphore image doesn't ship it.
+      - name: install-op
+        image: 1password/op:2
+        command: ["cp", "/usr/local/bin/op", "/op-bin/op"]
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
+        volumeMounts:
+        - name: op-bin
+          mountPath: /op-bin
       containers:
       - name: semaphore
         image: semaphoreui/semaphore:v2.18.20
@@ -107,10 +121,15 @@ spec:
         - name: oidc
           mountPath: /etc/semaphore/oidc
           readOnly: true
+        - name: op-bin
+          mountPath: /usr/local/bin/op
+          subPath: op
       volumes:
       - name: data
         persistentVolumeClaim:
           claimName: semaphore-data
+      - name: op-bin
+        emptyDir: {}
       - name: oidc
         secret:
           secretName: semaphore

@@ -11,7 +11,10 @@ Ansible playbooks on a schedule (weekly `site.yml` apply, Sun 04:00).
 - **Secrets**: `OnePasswordItem` -> Secret `semaphore`
   (`op://lab/semaphore`). The pod's `OP_CONNECT_TOKEN` is read-only on the
   `lab` vault; playbook runs inherit `OP_CONNECT_HOST`/`OP_CONNECT_TOKEN` for
-  `community.general.onepassword` lookups.
+  `community.general.onepassword` lookups. `onepassword` lookups shell out to
+  the `op` CLI on the controller (this pod), which the official image
+  doesn't ship — an `install-op` init container copies it from
+  `1password/op:2` into an `emptyDir` mounted at `/usr/local/bin/op`.
 - **Auth**: local `admin` (bootstrap) + Pocket ID OIDC
   (`https://auth.colinbruner.com`). OIDC users are non-admin by default.
 - **URLs**: https://semaphore.colinbruner.com (tunnel),
