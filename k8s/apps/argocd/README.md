@@ -11,7 +11,7 @@ The ArgoCD Helm chart is installed by bootstrap. The ApplicationSets that drive 
 ## Dependencies
 
 - **gateway** -- the shared Gateway and `argocd-tls` certificate for the HTTPRoute.
-- **1password** -- operator must be running for the `argocd-pocket-id-oauth` secret.
+- **1password** -- operator must be running for the `argocd-pocket-id-oauth` and `argocd-github-repo-creds` secrets.
 - Bootstrap must have completed (ArgoCD Helm chart installed).
 
 ## Resources
@@ -20,6 +20,7 @@ The ArgoCD Helm chart is installed by bootstrap. The ApplicationSets that drive 
 - **RBAC policies** — `resources/argocd-rbac.yaml`
 - **HTTPRoute** — `resources/argocd-httproute.yaml` (routes `argocd.colinbruner.com` via the shared Gateway)
 - **Pocket ID OAuth** — `resources/argocd-pocket-id-oauth.yaml` (OnePasswordItem for OAuth credentials)
+- **GitHub repo credentials** — `resources/argocd-github-auth.yaml` (OnePasswordItem, labeled `argocd.argoproj.io/secret-type: repository`, grants ArgoCD access to the private `Bruner-Family/quant-platform` repo used by `bootstrap/root/qp-appset.yaml`)
 
 ## ApplicationSets
 
@@ -28,12 +29,25 @@ The ApplicationSets are defined in `bootstrap/root/`, not in this directory:
 - **`bootstrap/root/apps-appset.yaml`** — a git directory generator over `k8s/apps/*`. ArgoCD automatically creates one Application per subdirectory and syncs it to the cluster.
 - **`bootstrap/root/platform-appset.yaml`** — a git directory generator over `k8s/platform/*`. Manages platform-layer infrastructure services.
 - **`bootstrap/root/cronhealth-app.yaml`** — the cronhealth Application.
+- **`bootstrap/root/qp-appset.yaml`** — a static list generator producing `quant-platform-dev`, sourced from the private `Bruner-Family/quant-platform` repo.
 
 **Behaviour:**
 - Any new directory added under `k8s/apps/` or `k8s/platform/` is automatically picked up as a new Application.
 - Sync is **automated** with `prune: true` and `selfHeal: true` — resources removed from git
   are pruned from the cluster, and out-of-band changes are reverted.
 - `CreateNamespace=true` means ArgoCD will create the destination namespace if it does not exist.
+
+**Bootstrap ordering (quant-platform):** all ApplicationSets in `bootstrap/root/` are applied in
+the same `kubectl apply -k` at the end of `bootstrap.sh`, before the 1Password operator or this
+`argocd` app have synced. `quant-platform-dev`'s repo credentials (`argocd-github-repo-creds`,
+defined above) come from a `OnePasswordItem` that itself depends on both the 1password platform
+component and this app being synced. On a fresh cluster this means the quant-platform Application
+will show a repo/auth error for a few minutes. This is expected and self-resolving: each
+ArgoCD Application reconciles independently, so this has no effect on the `platform` or `apps`
+ApplicationSets. `automated.selfHeal` plus ArgoCD's normal reconciliation loop keep re-evaluating
+the Application, and `syncPolicy.retry.limit: -1` on `qp-appset.yaml` makes sync-operation retries
+unlimited (exponential backoff, capped by ArgoCD's defaults) — no manual intervention is needed
+once the credentials secret materializes.
 
 To add a new app to GitOps management, simply create a directory with a
 `kustomization.yaml` under `k8s/apps/<name>/` (or `k8s/platform/<name>/` for infrastructure)
@@ -146,3 +160,4 @@ so this is self-correcting even if you forget.
 | Secret | Key | Source |
 |---|---|---|
 | `argocd-pocket-id-oauth` | (OAuth credentials) | OnePasswordItem (`vaults/lab/items/argocd-pocket-id-oauth`) |
+| `argocd-github-repo-creds` | `type`, `url`, `password` (repository credentials template) | OnePasswordItem (`vaults/lab/items/ArgoCD GitHub PAT`) |

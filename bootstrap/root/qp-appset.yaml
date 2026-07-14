@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: quant-platform
+spec:
+  goTemplate: true
+  goTemplateOptions:
+  - missingkey=error
+  generators:
+  - list:
+      elements:
+      - env: dev
+        path: infra/k8s
+  template:
+    metadata:
+      name: 'quant-platform-{{.env}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/Bruner-Family/quant-platform
+        targetRevision: main
+        path: '{{.path}}'
+      destination:
+        server: https://kubernetes.default.svc
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=false
+        retry:
+          limit: -1

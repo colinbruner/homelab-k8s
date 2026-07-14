@@ -4,3 +4,4 @@ namespace: argocd
 resources:
 - platform-appset.yaml
 - apps-appset.yaml
+- qp-appset.yaml

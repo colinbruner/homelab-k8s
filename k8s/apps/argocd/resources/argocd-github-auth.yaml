@@ -1,0 +1,9 @@
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: argocd-github-repo-creds
+  labels:
+    app.kubernetes.io/part-of: argocd
+    argocd.argoproj.io/secret-type: repository
+spec:
+  itemPath: "vaults/lab/items/ArgoCD GitHub PAT"
