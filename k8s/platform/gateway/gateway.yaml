@@ -28,6 +28,8 @@ spec:
       - kind: Secret
         name: dashboard-tls
       - kind: Secret
+        name: dagster-tls
+      - kind: Secret
         name: semaphore-tls
     allowedRoutes:
       namespaces:
