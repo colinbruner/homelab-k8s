@@ -31,7 +31,7 @@ fi
 if ! kubectl get secret op-credentials -n 1password >/dev/null 2>&1; then
   echo "[INFO]: Creating op-credentials secret..."
   CREDENTIALS_FILE="$(mktemp)"
-  op document get --vault homelab "homelab Credentials File" --out-file "${CREDENTIALS_FILE}"
+  op document get --vault homelab "1Password Operator Creds" --out-file "${CREDENTIALS_FILE}"
   kubectl create secret generic op-credentials \
     --namespace 1password \
     --from-file="1password-credentials.json=${CREDENTIALS_FILE}"
@@ -47,7 +47,7 @@ fi
 # Go's net/http rejects as an invalid Authorization header value -- strip it.
 if ! kubectl get secret op-connect-token -n 1password >/dev/null 2>&1; then
   echo "[INFO]: Creating op-connect-token secret..."
-  op read "op://homelab/homelab Access Token/credential" \
+  op read "op://homelab/1Password Operator Creds/token" \
     | tr -d '\n' \
     | kubectl create secret generic op-connect-token \
         --namespace 1password \
