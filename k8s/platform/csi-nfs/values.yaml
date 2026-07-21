@@ -9,6 +9,7 @@ storageClass:
     server: 192.168.10.5
     share: /var/nfs/shared/k8s
     subDir: namespaces/${pvc.metadata.namespace}/${pvc.metadata.name}
+    mountPermissions: "0777"
   volumeBindingMode: Immediate
   # NOTE: UNAS does not support v4 as of yet
   mountOptions:

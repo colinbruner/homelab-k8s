@@ -5,6 +5,7 @@ namespace: csi-nfs
 resources:
   - resources/namespace.yaml
   - resources/sc-buckets.yaml
+  - resources/sc-root.yaml
 
 helmCharts:
   - name: csi-driver-nfs
