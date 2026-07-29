@@ -10,7 +10,7 @@ runner scale set using the official OCI Helm charts.
 | ARC chart version | `0.14.2` |
 | GitHub scope | `https://github.com/Bruner-Family` |
 | Runner scale set | `self-homelab` |
-| Controller namespace | `arc-systems` |
+| Controller namespace | `gha-runners` |
 | Runner namespace | `arc-runners` |
 | Idle runners | `0` |
 | Maximum runners | `1` |
@@ -63,7 +63,7 @@ NetworkPolicies for runner isolation.
 After Argo CD syncs the `arc-runners` application:
 
 ```bash
-kubectl get pods -n arc-systems
+kubectl get pods -n gha-runners
 kubectl get autoscalingrunnersets -n arc-runners
 kubectl get pods -n arc-runners
 ```

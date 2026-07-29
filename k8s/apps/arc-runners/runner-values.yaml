@@ -9,7 +9,7 @@ containerMode:
   type: dind
 
 controllerServiceAccount:
-  namespace: arc-systems
+  namespace: gha-runners
   name: arc-controller
 
 template:
