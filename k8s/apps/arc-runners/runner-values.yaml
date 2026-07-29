@@ -1,0 +1,19 @@
+githubConfigUrl: https://github.com/Bruner-Family
+githubConfigSecret: github-config
+
+runnerScaleSetName: self-homelab
+minRunners: 0
+maxRunners: 1
+
+containerMode:
+  type: dind
+
+controllerServiceAccount:
+  namespace: arc-systems
+  name: arc-controller
+
+template:
+  spec:
+    automountServiceAccountToken: false
+    nodeSelector:
+      kubernetes.io/os: linux
