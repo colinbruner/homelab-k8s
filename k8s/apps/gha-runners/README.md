@@ -11,7 +11,7 @@ runner scale set using the official OCI Helm charts.
 | GitHub scope | `https://github.com/Bruner-Family` |
 | Runner scale set | `self-homelab` |
 | Controller namespace | `gha-runners` |
-| Runner namespace | `arc-runners` |
+| Runner namespace | `gha-runners` |
 | Idle runners | `0` |
 | Maximum runners | `1` |
 | Container mode | Docker-in-Docker |
@@ -28,6 +28,10 @@ jobs:
 The runner pod uses Docker-in-Docker so workflows can run container actions and
 build images. The Docker daemon is privileged, so access to this scale set must
 be limited to trusted repositories and workflows.
+
+The controller and workflow pods share the `gha-runners` namespace for
+operational simplicity. Workflow pods still use a no-permission service account
+and do not receive a Kubernetes service-account token.
 
 ## GitHub authentication
 
@@ -60,12 +64,11 @@ NetworkPolicies for runner isolation.
 
 ## Verification
 
-After Argo CD syncs the `arc-runners` application:
+After Argo CD syncs the `gha-runners` application:
 
 ```bash
 kubectl get pods -n gha-runners
-kubectl get autoscalingrunnersets -n arc-runners
-kubectl get pods -n arc-runners
+kubectl get autoscalingrunnersets -n gha-runners
 ```
 
 The runner namespace normally has only the listener pod while idle because the

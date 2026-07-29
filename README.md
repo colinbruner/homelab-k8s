@@ -126,7 +126,7 @@ See [bootstrap/README.md](./bootstrap/README.md) for details on the root-of-trus
 
 | App              | Description                                      | README                                                      |
 |------------------|--------------------------------------------------|-------------------------------------------------------------|
-| arc-runners      | GitHub Actions Runner Controller + scale set     | [README](./k8s/apps/arc-runners/README.md)                  |
+| gha-runners      | GitHub Actions Runner Controller + scale set     | [README](./k8s/apps/gha-runners/README.md)                  |
 | argocd           | ArgoCD user config, RBAC, HTTPRoute              | [README](./k8s/apps/argocd/README.md)                      |
 | backup-documents | Kopia backup for UNAS documents                  | [README](./k8s/apps/backup-documents/README.md)            |
 | beszel           | Beszel monitoring agent (`dashboard.colinbruner.com`) | [README](./k8s/apps/beszel/README.md)                 |
