@@ -3,7 +3,7 @@ githubConfigSecret: github-config
 
 runnerScaleSetName: self-homelab
 minRunners: 0
-maxRunners: 3
+maxRunners: 0
 
 containerMode:
   type: dind

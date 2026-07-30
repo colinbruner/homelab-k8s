@@ -12,9 +12,30 @@ runner scale set using the official OCI Helm charts.
 | Runner scale set | `self-homelab` |
 | Controller namespace | `gha-runners` |
 | Runner namespace | `gha-runners` |
+| Controller replicas | `0` |
 | Idle runners | `0` |
-| Maximum runners | `3` |
+| Maximum runners | `0` |
 | Container mode | Docker-in-Docker |
+
+## Paused state
+
+ARC is intentionally dormant. The controller has zero replicas and the runner
+scale set has both `minRunners` and `maxRunners` set to zero, so no new workflow
+jobs can start. The namespace, charts, CRDs, authentication, and RBAC remain in
+Git for future use.
+
+The scale-set listener may remain as a lightweight pod because ARC does not
+expose a listener replica setting. With `maxRunners` at zero it cannot create
+workflow runner pods.
+
+Running multiple DinD workflows efficiently needs more work. The initial trial
+showed that the cluster needs greater compute capacity, along with deliberate
+runner resource sizing and scheduling, before this should be enabled for regular
+parallel workloads.
+
+To resume service, increase the controller to one replica and set `maxRunners`
+to the desired concurrency. Revalidate available cluster capacity before
+merging that change.
 
 Workflows in repositories allowed to use the organization runner group can
 target the scale set with:
