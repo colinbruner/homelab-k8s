@@ -13,7 +13,7 @@ runner scale set using the official OCI Helm charts.
 | Controller namespace | `gha-runners` |
 | Runner namespace | `gha-runners` |
 | Idle runners | `0` |
-| Maximum runners | `1` |
+| Maximum runners | `3` |
 | Container mode | Docker-in-Docker |
 
 Workflows in repositories allowed to use the organization runner group can
