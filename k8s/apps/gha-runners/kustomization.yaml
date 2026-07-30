@@ -19,3 +19,31 @@ helmCharts:
     releaseName: self-homelab
     namespace: gha-runners
     valuesFile: runner-values.yaml
+
+patches:
+  - target:
+      group: actions.github.com
+      version: v1alpha1
+      kind: AutoscalingRunnerSet
+      name: self-homelab
+    patch: |-
+      apiVersion: actions.github.com/v1alpha1
+      kind: AutoscalingRunnerSet
+      metadata:
+        name: self-homelab
+        annotations:
+          argocd.argoproj.io/sync-wave: "1"
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: arc-gha-rs-controller
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: arc-gha-rs-controller
+        annotations:
+          argocd.argoproj.io/sync-wave: "2"
+      spec:
+        replicas: 0
