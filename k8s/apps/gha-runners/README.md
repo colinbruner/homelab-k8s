@@ -33,6 +33,11 @@ The controller and workflow pods share the `gha-runners` namespace for
 operational simplicity. Workflow pods still use a no-permission service account
 and do not receive a Kubernetes service-account token.
 
+The namespace enforces the `privileged` Pod Security level because DinD requires
+a privileged Docker daemon. Baseline violations remain enabled in audit and
+warning modes. Since the controller shares this namespace, only ARC resources
+should be deployed into it.
+
 ## GitHub authentication
 
 The 1Password operator materializes the `github-config` Kubernetes Secret from:
