@@ -31,6 +31,8 @@ spec:
         name: dagster-tls
       - kind: Secret
         name: semaphore-tls
+      - kind: Secret
+        name: console-tls
     allowedRoutes:
       namespaces:
         from: All
