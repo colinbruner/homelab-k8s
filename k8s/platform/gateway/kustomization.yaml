@@ -19,3 +19,4 @@ resources:
   - certificates/dashboard.yaml
   - certificates/dagster.yaml
   - certificates/semaphore.yaml
+  - certificates/console.yaml
