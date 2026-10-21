@@ -8,6 +8,8 @@ data:
     tunnel: b3175a48-2ecd-44a1-be47-6c892bbff5c8
     metrics: 0.0.0.0:2000
     no-autoupdate: true
+    # Default changed from 4 to auto in 2026.4.0; pin IPv4 to keep prior behavior.
+    edge-ip-version: "4"
 
     ingress:
       # Proxmox VE: routed directly to PVE nodes, bypassing Envoy Gateway.
